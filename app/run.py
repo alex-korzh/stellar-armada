@@ -16,7 +16,7 @@ from app.utils.constants import (
     LIGHT_BLUE,
 )
 from app.engine import GameEngine, Ship, Point, Event
-from app.utils.converter import PointConverter
+from app.utils.point_converter import PointConverter
 from app.sprites.ship import ShipSprite
 from app.utils.screen_point import ScreenPoint
 

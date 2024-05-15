@@ -3,7 +3,7 @@ from app.engine.engine import GameEngine
 from app.engine.point import Point
 from app.engine.ship import Ship
 from app.utils.config import ScreenConfig
-from app.utils.converter import PointConverter
+from app.utils.point_converter import PointConverter
 from app.utils.screen_point import ScreenPoint
 
 

@@ -1,3 +1,4 @@
+from pathlib import Path
 import pygame
 
 from app.utils.screen_point import ScreenPoint
@@ -6,7 +7,6 @@ from app.utils.screen_point import ScreenPoint
 class ShipSprite(pygame.sprite.Sprite):
     def __init__(self, position: ScreenPoint, direction: str):
         super().__init__()
-        self.image = pygame.image.load(
-            f"app/assets/fighter_{direction}.png"
-        ).convert_alpha()
+        img_path = Path("app", "assets", "img", f"fighter_{direction}.png")
+        self.image = pygame.image.load(img_path).convert_alpha()
         self.rect = self.image.get_rect(center=position.as_tuple)
