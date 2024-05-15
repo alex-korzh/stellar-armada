@@ -1,10 +1,10 @@
 import logging
 import sys
-from dataclasses import dataclass
 
 import pygame
 from app.game_state import GameState
 
+from app.level.level import Level, load_levels
 from app.utils.config import ScreenConfig
 from app.utils.constants import (
     GREY,
@@ -15,7 +15,7 @@ from app.utils.constants import (
     GAME_NAME,
     LIGHT_BLUE,
 )
-from app.engine import GameEngine, Ship, Point, Event
+from app.engine import GameEngine, Point, Event
 from app.utils.point_converter import PointConverter
 from app.sprites.ship import ShipSprite
 from app.utils.screen_point import ScreenPoint
@@ -182,6 +182,7 @@ class GameRunner:
 def run_game():
     pygame.init()
     config: ScreenConfig = ScreenConfig(pygame.display.Info().current_h)
+    level: Level = load_levels()[0]
     game = GameEngine(
         config.game_area_width_normalized, config.game_area_height_normalized
     )
