@@ -97,7 +97,7 @@ class GameRunner:
                         self.game_state.try_select_ship(mouse_pos)
 
             self.screen.fill(BLACK)
-            self.draw_grid(self.screen)
+            self.draw_grid()
             if self.game_state.is_ship_selected():
                 self.draw_selected_cell()
                 self.draw_destinations()
@@ -136,7 +136,7 @@ class GameRunner:
             )
 
     def draw_hp_bar(self):
-        # todo finish this
+        # TODO finish this
         selected_cell_pos = self.game_state.get_selected_ship_position()
         pygame.draw.line(
             self.screen,
@@ -146,7 +146,7 @@ class GameRunner:
             3,
         )
 
-    def draw_grid(self, screen):
+    def draw_grid(self):
         for x in range(
             self.screen_config.game_area_x_normalized,
             self.screen_config.game_area_width_normalized
@@ -154,7 +154,7 @@ class GameRunner:
             + 1,
         ):
             pygame.draw.line(
-                screen,
+                self.screen,
                 GREY,
                 (x * CELL_SIZE, self.screen_config.game_area_y),
                 (
@@ -169,7 +169,7 @@ class GameRunner:
             + self.screen_config.game_area_y_normalized,
         ):
             pygame.draw.line(
-                screen,
+                self.screen,
                 GREY,
                 (self.screen_config.game_area_x, y * CELL_SIZE),
                 (

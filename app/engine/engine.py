@@ -86,6 +86,7 @@ class GameEngine:
     def get_all_ships(self) -> list[Ship]:
         return [x for v in self.ships.values() for x in v]
 
+    # TODO think: just save ships in dict, keys=coords?
     def find_current_player_ship_by_pos(self, position: Point) -> Ship | None:
         for s in self.ships[self.current_player]:
             if s.position == position:
