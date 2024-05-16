@@ -8,9 +8,7 @@ from app.level.level import Level, load_levels
 from app.utils.config import ScreenConfig
 from app.utils.constants import (
     GREY,
-    CELL_SIZE,
     BLACK,
-    GREEN,
     LIGHT_GREEN,
     GAME_NAME,
     LIGHT_BLUE,
@@ -29,9 +27,10 @@ logger.root.setLevel(logging.DEBUG)
 
 
 class GameRunner:
-    def __init__(self, game: GameEngine, screen_config: ScreenConfig):
+    def __init__(self, game: GameEngine, screen_config: ScreenConfig, level: Level):
         self.screen_config = screen_config
         self.point_converter = PointConverter(screen_config)
+        self.level = level
 
         self.screen = pygame.display.set_mode(
             (self.screen_config.window_width, self.screen_config.window_height)
@@ -101,7 +100,7 @@ class GameRunner:
             if self.game_state.is_ship_selected():
                 self.draw_selected_cell()
                 self.draw_destinations()
-                self.draw_hp_bar()
+                # self.draw_hp_bar()
             self.ship_group.draw(self.screen)
             self.ship_group.update()
 
@@ -116,8 +115,8 @@ class GameRunner:
             (
                 selected_cell_pos.x,
                 selected_cell_pos.y,
-                CELL_SIZE,
-                CELL_SIZE,
+                self.level.tile_size,
+                self.level.tile_size,
             ),
         )
 
@@ -130,21 +129,21 @@ class GameRunner:
                 (
                     destination.x + 1,
                     destination.y + 1,
-                    CELL_SIZE - 1,
-                    CELL_SIZE - 1,
+                    self.level.tile_size - 1,
+                    self.level.tile_size - 1,
                 ),
             )
 
-    def draw_hp_bar(self):
-        # TODO finish this
-        selected_cell_pos = self.game_state.get_selected_ship_position()
-        pygame.draw.line(
-            self.screen,
-            GREEN,
-            (selected_cell_pos.x, selected_cell_pos.y),
-            (selected_cell_pos.x + CELL_SIZE, selected_cell_pos.y),
-            3,
-        )
+    # def draw_hp_bar(self):
+    #     # TODO finish this
+    #     selected_cell_pos = self.game_state.get_selected_ship_position()
+    #     pygame.draw.line(
+    #         self.screen,
+    #         GREEN,
+    #         (selected_cell_pos.x, selected_cell_pos.y),
+    #         (selected_cell_pos.x + self.level.tile_size, selected_cell_pos.y),
+    #         3,
+    #     )
 
     def draw_grid(self):
         for x in range(
@@ -156,9 +155,9 @@ class GameRunner:
             pygame.draw.line(
                 self.screen,
                 GREY,
-                (x * CELL_SIZE, self.screen_config.game_area_y),
+                (x * self.level.tile_size, self.screen_config.game_area_y),
                 (
-                    x * CELL_SIZE,
+                    x * self.level.tile_size,
                     self.screen_config.game_area_y
                     + self.screen_config.game_area_height,
                 ),
@@ -171,10 +170,10 @@ class GameRunner:
             pygame.draw.line(
                 self.screen,
                 GREY,
-                (self.screen_config.game_area_x, y * CELL_SIZE),
+                (self.screen_config.game_area_x, y * self.level.tile_size),
                 (
                     self.screen_config.game_area_x + self.screen_config.game_area_width,
-                    y * CELL_SIZE,
+                    y * self.level.tile_size,
                 ),
             )
 
@@ -187,7 +186,7 @@ def run_game():
     )
 
     game = GameEngine(level.width, level.height, level.starting_zones)
-    runner = GameRunner(game, config)
+    runner = GameRunner(game, config, level)
     runner.run()
 
 
