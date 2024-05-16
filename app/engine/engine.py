@@ -32,7 +32,12 @@ def generate_random_ships(topleft: Point, bottomright: Point) -> list[Ship]:
 
 
 class GameEngine:
-    def __init__(self, width_tiles: int, height_tiles: int):
+    def __init__(
+        self,
+        width_tiles: int,
+        height_tiles: int,
+        starting_zones: list[list[tuple[int, int]]],
+    ):
         self.min_point = Point(0, 0)
         self.max_point = Point(width_tiles, height_tiles)
 
@@ -46,12 +51,12 @@ class GameEngine:
             Player("Player 2", BLUE),
         ]
         # there should be map-specific places to put ships for each player
-        starting_zones = self.define_starting_zones()
-        logger.debug(f"Starting zones defined: {starting_zones}")
+        prepared_starting_zones = self.prepare_starting_zones(starting_zones)
+        logger.debug(f"Starting zones defined: {prepared_starting_zones}")
         self.ships = {
             p: generate_random_ships(
-                topleft=starting_zones[p][0],
-                bottomright=starting_zones[p][1],
+                topleft=prepared_starting_zones[p][0],
+                bottomright=prepared_starting_zones[p][1],
             )
             for p in self.players
         }
@@ -73,14 +78,16 @@ class GameEngine:
             callback()
         logger.debug(f"It is now {self.current_player.name}'s turn")
 
-    def define_starting_zones(self) -> dict[Player, list[Point]]:
+    def prepare_starting_zones(
+        self, starting_zones: list[list[tuple[int, int]]]
+    ) -> dict[Player, list[Point]]:
         # only works for 2 players for now
         return {
-            self.players[0]: [self.min_point, Point(self.width - 1, 2)],
-            self.players[1]: [
-                Point(self.min_point.x, self.height - 3),
-                Point(self.width - 1, self.height - 1),
-            ],
+            self.players[i]: [
+                Point(starting_zones[i][0][0], starting_zones[i][0][1]),
+                Point(starting_zones[i][1][0], starting_zones[i][1][1]),
+            ]
+            for i in range(2)
         }
 
     def get_all_ships(self) -> list[Ship]:

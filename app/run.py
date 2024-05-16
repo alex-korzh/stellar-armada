@@ -181,11 +181,10 @@ class GameRunner:
 
 def run_game():
     pygame.init()
-    config: ScreenConfig = ScreenConfig(pygame.display.Info().current_h)
     level: Level = load_levels()[0]
-    game = GameEngine(
-        config.game_area_width_normalized, config.game_area_height_normalized
-    )
+    config: ScreenConfig = ScreenConfig(pygame.display.Info().current_h)
+
+    game = GameEngine(level.width, level.height, level.starting_zones)
     runner = GameRunner(game, config)
     runner.run()
 
