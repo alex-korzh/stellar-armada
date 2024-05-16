@@ -2,7 +2,6 @@ import logging
 from app.engine.engine import GameEngine
 from app.engine.point import Point
 from app.engine.ship import Ship
-from app.utils.config import ScreenConfig
 from app.utils.point_converter import PointConverter
 from app.utils.screen_point import ScreenPoint
 
@@ -11,9 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 class GameState:
-    def __init__(self, engine: GameEngine, screen_config: ScreenConfig):
+    def __init__(self, engine: GameEngine, point_converter: PointConverter):
         self.engine = engine
-        self.point_converter = PointConverter(screen_config)
+        self.point_converter = point_converter
         self.selected_ship: Ship | None = None
         self.selected_ship_destinations: list[ScreenPoint] | None = None
 

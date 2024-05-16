@@ -29,7 +29,11 @@ logger.root.setLevel(logging.DEBUG)
 class GameRunner:
     def __init__(self, game: GameEngine, screen_config: ScreenConfig, level: Level):
         self.screen_config = screen_config
-        self.point_converter = PointConverter(screen_config)
+        self.x_normalized = screen_config.game_area_x // level.tile_size
+        self.y_normalized = screen_config.game_area_y // level.tile_size
+        self.point_converter = PointConverter(
+            screen_config, self.x_normalized, self.y_normalized
+        )
         self.level = level
 
         self.screen = pygame.display.set_mode(
@@ -39,16 +43,12 @@ class GameRunner:
         self.clock = pygame.time.Clock()
 
         self.game_engine = game
-        self.game_state = GameState(game, self.screen_config)
+        self.game_state = GameState(game, self.point_converter)
 
         self.ship_group = pygame.sprite.Group()
         all_ships = self.game_engine.get_all_ships()
         for ship in all_ships:
-            direction = (
-                "up"
-                if ship.position.y > self.screen_config.game_area_height_normalized / 2
-                else "down"
-            )
+            direction = "up" if ship.position.y > self.level.height / 2 else "down"
             position = self.point_converter.from_game_to_screen(ship.position)
             self.ship_group.add(ShipSprite(position, direction))
 
@@ -147,10 +147,8 @@ class GameRunner:
 
     def draw_grid(self):
         for x in range(
-            self.screen_config.game_area_x_normalized,
-            self.screen_config.game_area_width_normalized
-            + self.screen_config.game_area_x_normalized
-            + 1,
+            self.x_normalized,
+            self.level.width + self.x_normalized + 1,
         ):
             pygame.draw.line(
                 self.screen,
@@ -163,9 +161,8 @@ class GameRunner:
                 ),
             )
         for y in range(
-            self.screen_config.game_area_y_normalized,
-            self.screen_config.game_area_height_normalized
-            + self.screen_config.game_area_y_normalized,
+            self.y_normalized,
+            self.level.height + self.y_normalized,
         ):
             pygame.draw.line(
                 self.screen,
@@ -181,9 +178,7 @@ class GameRunner:
 def run_game():
     pygame.init()
     level: Level = load_levels()[0]
-    config: ScreenConfig = ScreenConfig(
-        pygame.display.Info().current_h, level.tile_size, level.width, level.height
-    )
+    config: ScreenConfig = ScreenConfig(pygame.display.Info().current_h)
 
     game = GameEngine(level.width, level.height, level.starting_zones)
     runner = GameRunner(game, config, level)
