@@ -10,5 +10,5 @@ class Ship:
     current_hp: int = 100
     damage: int = 10
     range: int = 4
-    speed: int = 3
-    active_moves: int = 3
+    speed: int = 8
+    active_moves: int = speed

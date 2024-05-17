@@ -1,6 +1,7 @@
 import logging
 
 import pygame
+from pygame.freetype import SysFont
 
 from app.engine.engine import Event, GameEngine
 from app.engine.point import Point
@@ -9,7 +10,7 @@ from app.level.level import Level
 from app.scenes.base import Scene
 from app.sprites.ship import ShipSprite
 from app.utils.config import ScreenConfig
-from app.utils.constants import BLACK, GREY, LIGHT_BLUE, LIGHT_GREEN
+from app.utils.constants import BLACK, GREY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_RED
 from app.utils.point_converter import PointConverter
 from app.utils.screen_point import ScreenPoint
 
@@ -48,6 +49,7 @@ class GameScene(Scene):
             Event.NEXT_TURN, self.game_state.reset_ship_selection
         )
 
+        self.font = SysFont("JetBrains Mono Bold", 24)
         logger.debug("Game scene initialized")
 
     def _move_ship_sprite(self, from_point: Point, to_point: Point) -> None:
@@ -62,12 +64,22 @@ class GameScene(Scene):
     def draw(self):
         self.screen.fill(BLACK)  # instead, draw by tile
         self.draw_grid()
+
         if self.game_state.is_ship_selected():
+            self.draw_text()
             self.draw_selected_cell()
             self.draw_destinations()
-            # self.draw_hp_bar()
+            self.draw_attack_range()
         self.ship_group.draw(self.screen)
         self.ship_group.update()
+
+    def draw_text(self):
+        self.font.render_to(
+            self.screen,
+            (0, 0),
+            f"HP: {self.game_state.selected_ship.current_hp}",
+            (255, 255, 255),
+        )
 
     def draw_selected_cell(self):
         selected_cell_pos = self.game_state.get_selected_ship_position()
@@ -96,16 +108,21 @@ class GameScene(Scene):
                 ),
             )
 
-    # def draw_hp_bar(self):
-    #     # TODO finish this
-    #     selected_cell_pos = self.game_state.get_selected_ship_position()
-    #     pygame.draw.line(
-    #         self.screen,
-    #         GREEN,
-    #         (selected_cell_pos.x, selected_cell_pos.y),
-    #         (selected_cell_pos.x + self.level.tile_size, selected_cell_pos.y),
-    #         3,
-    #     )
+    def draw_attack_range(self):
+        range_cells: list[ScreenPoint] = (
+            self.game_state.get_selected_ship_attack_range()
+        )
+        for cell in range_cells:
+            pygame.draw.rect(
+                self.screen,
+                LIGHT_RED,
+                (
+                    cell.x + 1,
+                    cell.y + 1,
+                    self.level.tile_size - 1,
+                    self.level.tile_size - 1,
+                ),
+            )
 
     def draw_grid(self):
         for x in range(
@@ -148,7 +165,6 @@ class GameScene(Scene):
             mouse_pos = ScreenPoint.from_screen()
             mouse_pos_point = self.point_converter.from_screen_to_game(mouse_pos)
 
-            # TODO: URGENT! FIX x and y coordinates!
             if (
                 mouse_pos_point.x < 0
                 or mouse_pos_point.y < 0
@@ -164,4 +180,4 @@ class GameScene(Scene):
                     self.game_state.selected_ship, mouse_pos_point
                 )
             else:
-                self.game_state.try_select_ship(mouse_pos)
+                self.game_state.try_select_ship(mouse_pos_point)

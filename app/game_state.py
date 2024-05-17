@@ -15,9 +15,9 @@ class GameState:
         self.point_converter = point_converter
         self.selected_ship: Ship | None = None
         self.selected_ship_destinations: list[ScreenPoint] | None = None
+        self.selected_ship_attack_range: list[ScreenPoint] | None = None
 
-    def try_select_ship(self, coordinates: ScreenPoint) -> bool:
-        point: Point = self.point_converter.from_screen_to_game(coordinates)
+    def try_select_ship(self, point: Point) -> bool:
         ship: Ship | None = self.engine.find_current_player_ship_by_pos(point)
         if ship:
             self.selected_ship = ship
@@ -57,3 +57,13 @@ class GameState:
                 if d != self.selected_ship.position
             ]
         return self.selected_ship_destinations
+
+    def get_selected_ship_attack_range(self) -> list[ScreenPoint]:
+        if self.selected_ship_attack_range is None:
+            attack_range = self.engine.find_attack_range_by_ship(self.selected_ship)
+            self.selected_ship_attack_range = [
+                self.point_converter.from_game_to_screen(d, center=False)
+                for d in attack_range
+                if d != self.selected_ship.position
+            ]
+        return self.selected_ship_attack_range

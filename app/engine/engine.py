@@ -102,11 +102,9 @@ class GameEngine:
         logger.debug(f"No ship found at {position}")
         return None
 
-    def find_all_destinations_by_ship(self, ship: Ship) -> list[Point]:
-        if ship not in self.get_all_ships():
-            return []
-        destinations = [ship.position]
-        queue = [ship.position]
+    def __bfs(self, position: Point, depth: int) -> list[Point]:
+        destinations = [position]
+        queue = [position]
 
         while queue:
             current = queue.pop(0)
@@ -114,12 +112,22 @@ class GameEngine:
                 if (
                     neighbor not in destinations
                     and neighbor.in_range(self.min_point, self.max_point)
-                    and neighbor.distance(ship.position) <= ship.active_moves
+                    and neighbor.distance(position) <= depth
                 ):
                     destinations.append(neighbor)
                     queue.append(neighbor)
         logger.debug("BFS successful")
         return destinations
+
+    def find_all_destinations_by_ship(self, ship: Ship) -> list[Point]:
+        if ship not in self.get_all_ships():
+            return []
+        return self.__bfs(ship.position, ship.active_moves)
+
+    def find_attack_range_by_ship(self, ship: Ship) -> list[Point]:
+        if ship not in self.get_all_ships():
+            return []
+        return self.__bfs(ship.position, ship.range)
 
     def is_ship_move_possible(self, ship: Ship, destination: Point) -> bool:
         destinations = self.find_all_destinations_by_ship(ship)
