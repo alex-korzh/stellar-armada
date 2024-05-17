@@ -97,6 +97,12 @@ class GameScene(Scene):
             f"HP: {self.game_state.selected_ship.current_hp}",
             (255, 255, 255),
         )
+        self.font.render_to(
+            self.screen,
+            (0, 30),
+            f"Attacks: {self.game_state.selected_ship.attacks_left}",
+            (255, 255, 255),
+        )
 
     def draw_selected_cell(self):
         selected_cell_pos = self.game_state.get_selected_ship_position()
@@ -193,8 +199,8 @@ class GameScene(Scene):
 
             if self.game_state.is_ship_selected():
                 logger.debug("Ship is selected")
-                if self.game_engine.is_enemy_ship(mouse_pos_point):
-                    self.game_engine.attack_ship(
+                if self.game_engine.find_enemy_ship_by_pos(mouse_pos_point):
+                    self.game_engine.try_attack_ship(
                         self.game_state.selected_ship, mouse_pos_point
                     )
                 else:

@@ -171,29 +171,36 @@ class GameEngine:
     def reset_ships_by_player(self, player: Player) -> None:
         for s in self.ships[player]:
             s.active_moves = s.speed
+            s.attacks_left = s.attacks
 
     def subscribe(self, event: Event, callback: callable) -> None:
         self.callbacks[event].append(callback)
         logger.debug(f"Subscribed to {event}: {callback.__name__}")
 
-    def attack_ship(self, attacker: Ship, position: Point) -> None:
-        ship, player = self.find_enemy_ship_by_pos(position)
-        if not ship:
+    def try_attack_ship(self, attacker: Ship, position: Point) -> None:
+        ship_player = self.find_enemy_ship_by_pos(position)
+        if not ship_player:
             return
-        if position.distance(attacker.position) <= attacker.range:
-            ship.current_hp -= attacker.damage
-            logger.debug(
-                f"Ship attacked at {position}, damage dealt: {attacker.damage}, current hp: {ship.current_hp}"
-            )
-            if ship.current_hp <= 0:
-                self.ships[player].remove(ship)
-                if self.is_game_over():
-                    return
-                for callback in self.callbacks[Event.SHIP_DESTROYED]:
-                    callback(position)
-                logger.debug(f"Ship destroyed at {position}")
-        else:
+        ship, player = ship_player
+        if attacker.attacks_left == 0:
+            logger.debug("No attacks left")
+            return
+        if position.distance(attacker.position) > attacker.range:
             logger.debug("Attack range exceeded")
+            return
+        ship.current_hp -= attacker.damage
+        attacker.attacks_left -= 1
+        logger.debug(
+            f"Ship attacked at {position}, damage dealt: {attacker.damage}, current hp: {ship.current_hp}"
+        )
+        logger.debug(f"Attacks left for attacker ship: {attacker.attacks_left}")
+        if ship.current_hp <= 0:
+            self.ships[player].remove(ship)
+            if self.is_game_over():
+                return
+            for callback in self.callbacks[Event.SHIP_DESTROYED]:
+                callback(position)
+            logger.debug(f"Ship destroyed at {position}")
 
     def is_game_over(self) -> bool:
         all_ships_count = 0

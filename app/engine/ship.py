@@ -12,3 +12,5 @@ class Ship:
     range: int = 4
     speed: int = 8
     active_moves: int = speed
+    attacks: int = 1
+    attacks_left: int = attacks
