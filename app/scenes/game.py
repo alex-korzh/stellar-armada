@@ -24,12 +24,10 @@ class GameScene(Scene):
         level: Level,
         screen: pygame.Surface,
     ):
+        super().__init__()
         self.screen_config = screen_config
-        self.x_normalized = screen_config.game_area_x // level.tile_size
-        self.y_normalized = screen_config.game_area_y // level.tile_size
-        self.point_converter = PointConverter(
-            screen_config, self.x_normalized, self.y_normalized
-        )
+
+        self.point_converter = PointConverter(screen_config, level.tile_size)
         self.level = level
         self.screen = screen
         self.game_engine = game
@@ -50,7 +48,7 @@ class GameScene(Scene):
             Event.NEXT_TURN, self.game_state.reset_ship_selection
         )
 
-        logger.debug("GameScene initialized")
+        logger.debug("Game scene initialized")
 
     def _move_ship_sprite(self, from_point: Point, to_point: Point) -> None:
         from_pos = self.point_converter.from_game_to_screen(from_point)
@@ -148,9 +146,19 @@ class GameScene(Scene):
             self.game_engine.next_turn()
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = ScreenPoint.from_screen()
+            mouse_pos_point = self.point_converter.from_screen_to_game(mouse_pos)
+
+            # TODO: URGENT! FIX x and y coordinates!
+            if (
+                mouse_pos_point.x < 0
+                or mouse_pos_point.y < 0
+                or mouse_pos_point.x > self.level.width
+                or mouse_pos_point.y > self.level.height
+            ):
+                logger.debug(f"Clicked outside of the game area: {mouse_pos_point}")
+                return
 
             if self.game_state.is_ship_selected():
-                mouse_pos_point = self.point_converter.from_screen_to_game(mouse_pos)
                 logger.debug("Trying to move ship")
                 self.game_engine.move_ship(
                     self.game_state.selected_ship, mouse_pos_point
