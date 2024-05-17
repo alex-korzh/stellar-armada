@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 class Event(Enum):
     SHIP_MOVED = 1
     NEXT_TURN = 2
+    SHIP_DESTROYED = 3
+    GAME_OVER = 4
 
 
 def generate_random_ships(topleft: Point, bottomright: Point) -> list[Ship]:
@@ -68,6 +70,8 @@ class GameEngine:
         self.callbacks = {
             Event.SHIP_MOVED: [],
             Event.NEXT_TURN: [],
+            Event.SHIP_DESTROYED: [],
+            Event.GAME_OVER: [],
         }
         logger.debug("Game engine initialized")
 
@@ -101,6 +105,20 @@ class GameEngine:
                 return s
         logger.debug(f"No ship found at {position}")
         return None
+
+    def find_enemy_ship_by_pos(self, position: Point) -> tuple[Ship, Player] | None:
+        for player in self.players:
+            if player == self.current_player:
+                continue
+            for s in self.ships[player]:
+                if s.position == position:
+                    logger.debug(f"Found enemy ship at {s.position}")
+                    return s, player
+        logger.debug(f"No enemy ship found at {position}")
+        return None
+
+    def is_enemy_ship(self, position: Point) -> bool:
+        return self.find_enemy_ship_by_pos(position) is not None
 
     def __bfs(self, position: Point, depth: int) -> list[Point]:
         destinations = [position]
@@ -157,3 +175,34 @@ class GameEngine:
     def subscribe(self, event: Event, callback: callable) -> None:
         self.callbacks[event].append(callback)
         logger.debug(f"Subscribed to {event}: {callback.__name__}")
+
+    def attack_ship(self, attacker: Ship, position: Point) -> None:
+        ship, player = self.find_enemy_ship_by_pos(position)
+        if not ship:
+            return
+        if position.distance(attacker.position) <= attacker.range:
+            ship.current_hp -= attacker.damage
+            logger.debug(
+                f"Ship attacked at {position}, damage dealt: {attacker.damage}, current hp: {ship.current_hp}"
+            )
+            if ship.current_hp <= 0:
+                self.ships[player].remove(ship)
+                if self.is_game_over():
+                    return
+                for callback in self.callbacks[Event.SHIP_DESTROYED]:
+                    callback(position)
+                logger.debug(f"Ship destroyed at {position}")
+        else:
+            logger.debug("Attack range exceeded")
+
+    def is_game_over(self) -> bool:
+        all_ships_count = 0
+        for p, ships in self.ships.items():
+            if p != self.current_player:
+                all_ships_count += len(ships)
+        if all_ships_count == 0 and len(self.ships[self.current_player]) > 0:
+            for callback in self.callbacks[Event.GAME_OVER]:
+                callback(self.current_player)
+            logger.debug(f"Game over, {self.current_player.name} wins")
+            return True
+        return False

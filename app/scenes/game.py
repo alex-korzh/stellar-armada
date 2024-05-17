@@ -3,6 +3,7 @@ import logging
 import pygame
 from pygame.freetype import SysFont
 
+from app.engine import Player
 from app.engine.engine import Event, GameEngine
 from app.engine.point import Point
 from app.game_state import GameState
@@ -51,9 +52,22 @@ class GameScene(Scene):
         self.game_engine.subscribe(
             Event.NEXT_TURN, self.game_state.reset_ship_selection
         )
+        self.game_engine.subscribe(Event.SHIP_DESTROYED, self._remove_ship_sprite)
+        self.game_engine.subscribe(Event.GAME_OVER, self.game_over)
 
         self.font = SysFont("JetBrains Mono Bold", 24)
         logger.debug("Game scene initialized")
+
+    def game_over(self, player_won: Player):  # temporary
+        pygame.event.post(pygame.event.Event(pygame.QUIT))
+
+    def _remove_ship_sprite(self, position: Point) -> None:
+        screen_pos = self.point_converter.from_game_to_screen(position)
+        for sprite in self.ship_group.sprites():
+            if sprite.rect.center == screen_pos.as_tuple:
+                self.ship_group.remove(sprite)
+                logger.debug("Ship sprite removed successfully")
+                return
 
     def _move_ship_sprite(self, from_point: Point, to_point: Point) -> None:
         from_pos = self.point_converter.from_game_to_screen(from_point)
@@ -178,9 +192,14 @@ class GameScene(Scene):
                 return
 
             if self.game_state.is_ship_selected():
-                logger.debug("Trying to move ship")
-                self.game_engine.move_ship(
-                    self.game_state.selected_ship, mouse_pos_point
-                )
+                logger.debug("Ship is selected")
+                if self.game_engine.is_enemy_ship(mouse_pos_point):
+                    self.game_engine.attack_ship(
+                        self.game_state.selected_ship, mouse_pos_point
+                    )
+                else:
+                    self.game_engine.move_ship(
+                        self.game_state.selected_ship, mouse_pos_point
+                    )
             else:
                 self.game_state.try_select_ship(mouse_pos_point)

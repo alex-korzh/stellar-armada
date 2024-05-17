@@ -22,3 +22,6 @@ class Point:
 
     def distance(self, other: "Point") -> int:
         return abs(self.x - other.x) + abs(self.y - other.y)
+
+    def __eq__(self, other: "Point") -> bool:
+        return self.x == other.x and self.y == other.y
