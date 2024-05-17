@@ -46,6 +46,9 @@ class GameScene(Scene):
             Event.SHIP_MOVED, self.game_state.reset_selected_ship_destinations
         )
         self.game_engine.subscribe(
+            Event.SHIP_MOVED, self.game_state.reset_selected_ship_attack_range
+        )
+        self.game_engine.subscribe(
             Event.NEXT_TURN, self.game_state.reset_ship_selection
         )
 

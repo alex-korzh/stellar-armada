@@ -33,6 +33,7 @@ class GameState:
     def reset_ship_selection(self):
         self.selected_ship = None
         self.selected_ship_destinations = None
+        self.selected_ship_attack_range = None
         logger.debug("Ship deselected")
 
     def get_selected_ship_position(self) -> ScreenPoint:
@@ -45,6 +46,14 @@ class GameState:
         self.selected_ship_destinations = [
             self.point_converter.from_game_to_screen(d, center=False)
             for d in destinations
+            if d != self.selected_ship.position
+        ]
+
+    def reset_selected_ship_attack_range(self, *args) -> None:
+        attack_range = self.engine.find_attack_range_by_ship(self.selected_ship)
+        self.selected_ship_attack_range = [
+            self.point_converter.from_game_to_screen(d, center=False)
+            for d in attack_range
             if d != self.selected_ship.position
         ]
 
