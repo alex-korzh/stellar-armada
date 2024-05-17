@@ -93,18 +93,16 @@ class GameScene(Scene):
         self.ship_group.update()
 
     def draw_text(self):
-        self.font.render_to(
-            self.screen,
-            (0, 0),
-            f"HP: {self.game_state.selected_ship.current_hp}",
-            (255, 255, 255),
-        )
-        self.font.render_to(
-            self.screen,
-            (0, 30),
-            f"Attacks: {self.game_state.selected_ship.attacks_left}",
-            (255, 255, 255),
-        )
+        data = self.game_state.selected_ship.infodump()
+        shift = 0
+        for i in data.split("\n"):
+            text_rect = self.font.render_to(
+                self.screen,
+                (0, 0 + shift),
+                i,
+                (255, 255, 255),
+            )
+            shift += text_rect.h * 1.5
 
     def draw_selected_cell(self):
         selected_cell_pos = self.game_state.get_selected_ship_position()

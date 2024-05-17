@@ -14,3 +14,11 @@ class Ship:
     active_moves: int = speed
     attacks: int = 1
     attacks_left: int = attacks
+
+    def infodump(self):
+        return (
+            f"HP: {self.current_hp} ({self.hp})"
+            f"\nAttacks: {self.attacks_left} ({self.attacks})"
+            f"\nMoves: {self.active_moves} ({self.speed})"
+            f"\nDamage: {self.damage}"
+        )
