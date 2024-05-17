@@ -4,6 +4,8 @@ from pygame import Event
 
 
 class Scene(ABC):
+    next_scene: "Scene" = None
+
     def __init__(self):
         pass
 

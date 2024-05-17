@@ -35,11 +35,11 @@ class GameRunner:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-                self.scene.handle_event(
-                    event
-                )  # possible to make it return a scene to be able to change scenes
-            self.scene.update()  # possible to make it return a scene to be able to change scenes
+                self.scene.handle_event(event)
+            self.scene.update()
             self.scene.draw()
+            if self.scene.next_scene:
+                self.scene = self.scene.next_scene
             pygame.display.update()
             self.clock.tick(60)
 
@@ -48,9 +48,8 @@ def run_game():
     pygame.init()
     level: Level = load_levels()[0]
     config: ScreenConfig = ScreenConfig(pygame.display.Info().current_h)
-    screen = pygame.display.set_mode((config.window_width, config.window_height))
     game = GameEngine(level.width, level.height, level.starting_zones)
-    scene = GameScene(game, config, level, screen)
+    scene = GameScene(game, config, level)
     runner = GameRunner(scene)
     runner.run()
 

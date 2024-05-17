@@ -9,6 +9,7 @@ from app.engine.point import Point
 from app.game_state import GameState
 from app.level.level import Level
 from app.scenes.base import Scene
+from app.scenes.game_over import GameOver
 from app.sprites.ship import ShipSprite
 from app.utils.config import ScreenConfig
 from app.utils.constants import BLACK, GREY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_RED
@@ -24,14 +25,15 @@ class GameScene(Scene):
         game: GameEngine,
         screen_config: ScreenConfig,
         level: Level,
-        screen: pygame.Surface,
     ):
         super().__init__()
         self.screen_config = screen_config
 
         self.point_converter = PointConverter(screen_config, level.tile_size)
         self.level = level
-        self.screen = screen
+        self.screen = pygame.display.set_mode(
+            (self.screen_config.window_width, self.screen_config.window_height)
+        )
         self.game_engine = game
         self.game_state = GameState(game, self.point_converter)
 
@@ -55,11 +57,11 @@ class GameScene(Scene):
         self.game_engine.subscribe(Event.SHIP_DESTROYED, self._remove_ship_sprite)
         self.game_engine.subscribe(Event.GAME_OVER, self.game_over)
 
-        self.font = SysFont("JetBrains Mono Bold", 24)
+        self.font = SysFont("jetbrainsmononl", size=24, bold=True)
         logger.debug("Game scene initialized")
 
     def game_over(self, player_won: Player):  # temporary
-        pygame.event.post(pygame.event.Event(pygame.QUIT))
+        self.next_scene = GameOver(self.screen_config, player_won)
 
     def _remove_ship_sprite(self, position: Point) -> None:
         screen_pos = self.point_converter.from_game_to_screen(position)
@@ -182,8 +184,14 @@ class GameScene(Scene):
         pass
 
     def handle_event(self, event: pygame.Event):
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            self.game_engine.next_turn()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                self.game_engine.next_turn()
+            elif event.key == pygame.K_ESCAPE:
+                # cheat for debugging
+                self.next_scene = GameOver(
+                    self.screen_config, self.game_engine.current_player
+                )
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = ScreenPoint.from_screen()
             mouse_pos_point = self.point_converter.from_screen_to_game(mouse_pos)
