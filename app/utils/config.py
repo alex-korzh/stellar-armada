@@ -6,7 +6,8 @@ logger = logging.getLogger(__name__)
 
 class ScreenConfig:
     def __init__(self, screen_height: int):
-        self.window_width: int = screen_height
+        # TODO make width and height static ( from config). Implement scrolling
+        self.window_width: int = int(screen_height * 1.3)
         self.window_height: int = int(7 / 8 * screen_height)
         self.game_area_width: int = self.window_height
         self.game_area_height: int = self.window_height

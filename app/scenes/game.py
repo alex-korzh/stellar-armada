@@ -111,30 +111,32 @@ class GameScene(Scene):
 
     def draw_grid(self):
         for x in range(
-            self.x_normalized,
-            self.level.width + self.x_normalized + 1,
+            self.screen_config.game_area_x,
+            self.screen_config.game_area_x + self.screen_config.game_area_width + 1,
+            self.level.tile_size,
         ):
             pygame.draw.line(
                 self.screen,
                 GREY,
-                (x * self.level.tile_size, self.screen_config.game_area_y),
+                (x, self.screen_config.game_area_y),
                 (
-                    x * self.level.tile_size,
+                    x,
                     self.screen_config.game_area_y
                     + self.screen_config.game_area_height,
                 ),
             )
         for y in range(
-            self.y_normalized,
-            self.level.height + self.y_normalized,
+            self.screen_config.game_area_y,
+            self.screen_config.game_area_y + self.screen_config.game_area_height,
+            self.level.tile_size,
         ):
             pygame.draw.line(
                 self.screen,
                 GREY,
-                (self.screen_config.game_area_x, y * self.level.tile_size),
+                (self.screen_config.game_area_x, y),
                 (
                     self.screen_config.game_area_x + self.screen_config.game_area_width,
-                    y * self.level.tile_size,
+                    y,
                 ),
             )
 
