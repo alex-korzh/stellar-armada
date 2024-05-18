@@ -94,3 +94,6 @@ class GameState:
                 if d != self.selected_ship.position
             ]
         return self.selected_ship_attack_range
+
+    def get_game_info(self) -> str:
+        return f"Turn: {self.engine.turn}\nPlayer: {self.engine.current_player}"

@@ -61,7 +61,9 @@ class GameScene(Scene):
         logger.debug("Game scene initialized")
 
     def game_over(self, player_won: Player):  # temporary
-        self.next_scene = GameOver(self.screen_config, player_won)
+        self.next_scene = GameOver(
+            self.screen_config, player_won, self.game_engine.turn
+        )
 
     def _remove_ship_sprite(self, position: Point) -> None:
         screen_pos = self.point_converter.from_game_to_screen(position)
@@ -85,16 +87,16 @@ class GameScene(Scene):
         self.draw_grid()
 
         if self.game_state.is_ship_selected():
-            self.draw_text()
             self.draw_selected_cell()
             if self.game_state.selection_mode == SelectionMode.MOVE:
                 self.draw_destinations()
             elif self.game_state.selection_mode == SelectionMode.ATTACK:
                 self.draw_attack_range()
+        self.draw_text()
         self.ship_group.draw(self.screen)
         self.ship_group.update()
 
-    def draw_text(self):
+    def draw_left_panel(self):
         if not self.game_state.is_ship_selected():
             return
         data = self.game_state.selected_ship.infodump()
@@ -113,6 +115,23 @@ class GameScene(Scene):
             f"Mode: {self.game_state.selection_mode.value}",
             (255, 255, 255),
         )
+
+    def draw_right_panel(self):
+        x = self.screen_config.game_area_x + self.screen_config.game_area_width + 5
+        data = self.game_state.get_game_info()
+        shift = 0
+        for i in data.split("\n"):
+            text_rect = self.font.render_to(
+                self.screen,
+                (x, 0 + shift),
+                i,
+                (255, 255, 255),
+            )
+            shift += text_rect.h * 1.5
+
+    def draw_text(self):
+        self.draw_left_panel()
+        self.draw_right_panel()
 
     def draw_selected_cell(self):
         selected_cell_pos = self.game_state.get_selected_ship_position()
@@ -198,7 +217,9 @@ class GameScene(Scene):
                     self.game_engine.next_turn()
                 case pygame.K_ESCAPE:
                     self.next_scene = GameOver(
-                        self.screen_config, self.game_engine.current_player
+                        self.screen_config,
+                        self.game_engine.current_player,
+                        self.game_engine.turn,
                     )
                 case pygame.K_a:
                     self.game_state.switch_selection_mode()
