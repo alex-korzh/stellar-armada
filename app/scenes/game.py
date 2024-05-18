@@ -6,7 +6,7 @@ from pygame.freetype import SysFont
 from app.engine import Player
 from app.engine.engine import Event, GameEngine
 from app.engine.point import Point
-from app.game_state import GameState
+from app.game_state import GameState, SelectionMode
 from app.level.level import Level
 from app.scenes.base import Scene
 from app.scenes.game_over import GameOver
@@ -87,12 +87,16 @@ class GameScene(Scene):
         if self.game_state.is_ship_selected():
             self.draw_text()
             self.draw_selected_cell()
-            self.draw_destinations()
-            self.draw_attack_range()
+            if self.game_state.selection_mode == SelectionMode.MOVE:
+                self.draw_destinations()
+            elif self.game_state.selection_mode == SelectionMode.ATTACK:
+                self.draw_attack_range()
         self.ship_group.draw(self.screen)
         self.ship_group.update()
 
     def draw_text(self):
+        if not self.game_state.is_ship_selected():
+            return
         data = self.game_state.selected_ship.infodump()
         shift = 0
         for i in data.split("\n"):
@@ -103,6 +107,12 @@ class GameScene(Scene):
                 (255, 255, 255),
             )
             shift += text_rect.h * 1.5
+        self.font.render_to(
+            self.screen,
+            (0, 0 + shift),
+            f"Mode: {self.game_state.selection_mode.value}",
+            (255, 255, 255),
+        )
 
     def draw_selected_cell(self):
         selected_cell_pos = self.game_state.get_selected_ship_position()
@@ -183,13 +193,15 @@ class GameScene(Scene):
 
     def handle_event(self, event: pygame.Event):
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                self.game_engine.next_turn()
-            elif event.key == pygame.K_ESCAPE:
-                # cheat for debugging
-                self.next_scene = GameOver(
-                    self.screen_config, self.game_engine.current_player
-                )
+            match event.key:
+                case pygame.K_SPACE:
+                    self.game_engine.next_turn()
+                case pygame.K_ESCAPE:
+                    self.next_scene = GameOver(
+                        self.screen_config, self.game_engine.current_player
+                    )
+                case pygame.K_a:
+                    self.game_state.switch_selection_mode()
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = ScreenPoint.from_screen()
             mouse_pos_point = self.point_converter.from_screen_to_game(mouse_pos)
@@ -205,11 +217,11 @@ class GameScene(Scene):
 
             if self.game_state.is_ship_selected():
                 logger.debug("Ship is selected")
-                if self.game_engine.find_enemy_ship_by_pos(mouse_pos_point):
+                if self.game_state.selection_mode == SelectionMode.ATTACK:
                     self.game_engine.try_attack_ship(
                         self.game_state.selected_ship, mouse_pos_point
                     )
-                else:
+                elif self.game_state.selection_mode == SelectionMode.MOVE:
                     self.game_engine.move_ship(
                         self.game_state.selected_ship, mouse_pos_point
                     )
