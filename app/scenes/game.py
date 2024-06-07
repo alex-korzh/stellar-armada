@@ -84,7 +84,7 @@ class GameScene(Scene):
 
     def draw(self):
         self.screen.fill(BLACK)  # instead, draw by tile
-        self.draw_grid()
+        self.draw_grid()  # todo draw on surface on load, then paint to screen every frame
 
         if self.game_state.is_ship_selected():
             self.draw_selected_cell()

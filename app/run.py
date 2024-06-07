@@ -52,7 +52,3 @@ def run_game():
     scene = GameScene(game, config, level)
     runner = GameRunner(scene)
     runner.run()
-
-
-if __name__ == "__main__":
-    run_game()

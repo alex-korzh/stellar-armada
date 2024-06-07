@@ -3,6 +3,7 @@ import logging
 import random
 from enum import Enum
 
+from app.engine.weapons import Laser
 from app.utils.constants import RED, BLUE
 from app.engine.point import Point
 from app.engine.player import Player
@@ -18,6 +19,7 @@ class Event(Enum):
     GAME_OVER = 4
 
 
+# TODO proper ship types
 def generate_random_ships(topleft: Point, bottomright: Point) -> list[Ship]:
     ships = []
     limit = 1  # can be randomized later
@@ -27,7 +29,8 @@ def generate_random_ships(topleft: Point, bottomright: Point) -> list[Ship]:
                 position=Point(
                     random.randint(topleft.x, bottomright.x),
                     random.randint(topleft.y, bottomright.y),
-                )
+                ),
+                weapons=[Laser()],
             )
         )
     return ships
@@ -146,7 +149,7 @@ class GameEngine:
     def find_attack_range_by_ship(self, ship: Ship) -> list[Point]:
         if ship not in self.get_all_ships():
             return []
-        return self.__bfs(ship.position, ship.range)
+        return self.__bfs(ship.position, ship.selected_weapon.range)
 
     def is_ship_move_possible(self, ship: Ship, destination: Point) -> bool:
         destinations = self.find_all_destinations_by_ship(ship)
@@ -172,7 +175,7 @@ class GameEngine:
     def reset_ships_by_player(self, player: Player) -> None:
         for s in self.ships[player]:
             s.active_moves = s.speed
-            s.attacks_left = s.attacks
+            s.selected_weapon.attacks_left = s.selected_weapon.attacks
 
     def subscribe(self, event: Event, callback: callable) -> None:
         self.callbacks[event].append(callback)
@@ -186,13 +189,13 @@ class GameEngine:
         if attacker.attacks_left == 0:
             logger.debug("No attacks left")
             return
-        if position.distance(attacker.position) > attacker.range:
+        if position.distance(attacker.position) > attacker.selected_weapon.range:
             logger.debug("Attack range exceeded")
             return
-        ship.current_hp -= attacker.damage
-        attacker.attacks_left -= 1
+        ship.current_hp -= attacker.selected_weapon.damage
+        attacker.selected_weapon.attacks_left -= 1
         logger.debug(
-            f"Ship attacked at {position}, damage dealt: {attacker.damage}, current hp: {ship.current_hp}"
+            f"Ship attacked at {position}, damage dealt: {attacker.selected_weapon.damage}, current hp: {ship.current_hp}"
         )
         logger.debug(f"Attacks left for attacker ship: {attacker.attacks_left}")
         if ship.current_hp <= 0:
