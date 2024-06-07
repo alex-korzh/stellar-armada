@@ -16,7 +16,6 @@ logging.basicConfig(
     format="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
     datefmt="%H:%M:%S",
 )
-logger.root.setLevel(logging.DEBUG)
 
 
 class GameRunner:
@@ -44,7 +43,11 @@ class GameRunner:
             self.clock.tick(60)
 
 
-def run_game():
+def run_game(debug: bool = True):
+    if debug:
+        logger.root.setLevel(logging.DEBUG)
+    else:
+        logger.root.setLevel(logging.INFO)
     pygame.init()
     level: Level = load_levels()[0]
     config: ScreenConfig = ScreenConfig(pygame.display.Info().current_h)
