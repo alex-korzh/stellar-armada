@@ -7,6 +7,7 @@ Assets from:
 https://opengameart.org/content/space-ship-mech-construction-kit-2
 
 Plans:
-1. Main menu
-2. Camera, minimap
-3. Interface, UI panels
+1. [x] Main menu 
+2. [ ] Camera, minimap
+3. [ ] Interface, UI panels
+4. [ ] Utilize `update` method in scenes

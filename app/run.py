@@ -2,14 +2,11 @@ import logging
 
 import pygame
 
-from app.level.level import Level, load_levels
 from app.scenes.base import Scene
-from app.scenes.game import GameScene
+
+from app.scenes.main_menu import MainMenu
 from app.utils.config import ScreenConfig
 from app.utils.constants import GAME_NAME
-
-from app.engine import GameEngine
-
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -49,9 +46,7 @@ def run_game(debug: bool = True):
     else:
         logger.root.setLevel(logging.INFO)
     pygame.init()
-    level: Level = load_levels()[0]
     config: ScreenConfig = ScreenConfig(pygame.display.Info().current_h)
-    game = GameEngine(level.width, level.height, level.starting_zones)
-    scene = GameScene(game, config, level)
+    scene = MainMenu(config)
     runner = GameRunner(scene)
     runner.run()
