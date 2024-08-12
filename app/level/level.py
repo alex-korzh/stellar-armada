@@ -2,7 +2,6 @@ from dataclasses import asdict, dataclass
 from enum import Enum
 import json
 from pathlib import Path
-# TODO: support TileD format
 
 
 class TileType(str, Enum):
@@ -24,10 +23,10 @@ class Level:
 def generate_simple_level() -> None:
     level = Level(
         tile_size=50,
-        height=28,
-        width=28,
-        starting_zones=[[(0, 0), (27, 2)], [(0, 25), (27, 27)]],
-        data=[[TileType.SPACE for _ in range(28)] for _ in range(28)],
+        height=30,
+        width=30,
+        starting_zones=[[(0, 0), (29, 2)], [(0, 27), (29, 29)]],
+        data=[[TileType.SPACE for _ in range(30)] for _ in range(30)],
     )
     file_path = Path("app", "assets", "levels", "level1.json")
     with open(file_path, "w") as file:

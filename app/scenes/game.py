@@ -92,46 +92,46 @@ class GameScene(Scene):
                 self.draw_destinations()
             elif self.game_state.selection_mode == SelectionMode.ATTACK:
                 self.draw_attack_range()
-        self.draw_text()
+        # self.draw_text()
         self.ship_group.draw(self.screen)
         self.ship_group.update()
 
-    def draw_left_panel(self):
-        if not self.game_state.is_ship_selected():
-            return
-        data = self.game_state.selected_ship.infodump()
-        shift = 0
-        for i in data.split("\n"):
-            text_rect = self.font.render_to(
-                self.screen,
-                (0, 0 + shift),
-                i,
-                (255, 255, 255),
-            )
-            shift += text_rect.h * 1.5
-        self.font.render_to(
-            self.screen,
-            (0, 0 + shift),
-            f"Mode: {self.game_state.selection_mode.value}",
-            (255, 255, 255),
-        )
+    # def draw_left_panel(self):
+    #     if not self.game_state.is_ship_selected():
+    #         return
+    #     data = self.game_state.selected_ship.infodump()
+    #     shift = 0
+    #     for i in data.split("\n"):
+    #         text_rect = self.font.render_to(
+    #             self.screen,
+    #             (0, 0 + shift),
+    #             i,
+    #             (255, 255, 255),
+    #         )
+    #         shift += text_rect.h * 1.5
+    #     self.font.render_to(
+    #         self.screen,
+    #         (0, 0 + shift),
+    #         f"Mode: {self.game_state.selection_mode.value}",
+    #         (255, 255, 255),
+    #     )
 
-    def draw_right_panel(self):
-        x = self.screen_config.game_area_x + self.screen_config.game_area_width + 5
-        data = self.game_state.get_game_info()
-        shift = 0
-        for i in data.split("\n"):
-            text_rect = self.font.render_to(
-                self.screen,
-                (x, 0 + shift),
-                i,
-                (255, 255, 255),
-            )
-            shift += text_rect.h * 1.5
+    # def draw_right_panel(self):
+    #     x = self.screen_config.game_area_x + self.screen_config.game_area_width + 5
+    #     data = self.game_state.get_game_info()
+    #     shift = 0
+    #     for i in data.split("\n"):
+    #         text_rect = self.font.render_to(
+    #             self.screen,
+    #             (x, 0 + shift),
+    #             i,
+    #             (255, 255, 255),
+    #         )
+    #         shift += text_rect.h * 1.5
 
-    def draw_text(self):
-        self.draw_left_panel()
-        self.draw_right_panel()
+    # def draw_text(self):
+    #     self.draw_left_panel()
+    #     self.draw_right_panel()
 
     def draw_selected_cell(self):
         selected_cell_pos = self.game_state.get_selected_ship_position()
