@@ -141,6 +141,9 @@ class GameScene(Scene):
         width_scale: int = 0,
         fill: bool = True,
     ):
+        if not self.screen_config.is_in_game_area(x, y):
+            return
+
         width = self.level.tile_size + width_scale
         pygame.draw.rect(
             self.screen, color, (x, y, width, width), width=0 if fill else 1
@@ -169,7 +172,7 @@ class GameScene(Scene):
         effective_height = min(tiles_height, self.level.height)
         for x in range(effective_width):
             for y in range(effective_height):
-                point = self.point_converter.from_game_to_screen(Point(x,y), False)
+                point = self.point_converter.from_game_to_screen(Point(x, y), False)
                 self.draw_cell(GREY, point.x, point.y, fill=False)
 
     def update(self):
@@ -192,12 +195,7 @@ class GameScene(Scene):
             mouse_pos = ScreenPoint.from_screen()
             mouse_pos_point = self.point_converter.from_screen_to_game(mouse_pos)
 
-            if (
-                mouse_pos_point.x < 0
-                or mouse_pos_point.y < 0
-                or mouse_pos_point.x > self.level.width
-                or mouse_pos_point.y > self.level.height
-            ):
+            if not self.screen_config.is_in_game_area(mouse_pos.x, mouse_pos.y):
                 logger.debug(f"Clicked outside of the game area: {mouse_pos_point}")
                 return
 
