@@ -133,79 +133,44 @@ class GameScene(Scene):
     #     self.draw_left_panel()
     #     self.draw_right_panel()
 
+    def draw_cell(
+        self,
+        color: tuple[int, int, int],
+        x: int,
+        y: int,
+        width_scale: int = 0,
+        fill: bool = True,
+    ):
+        width = self.level.tile_size + width_scale
+        pygame.draw.rect(
+            self.screen, color, (x, y, width, width), width=0 if fill else 1
+        )
+
     def draw_selected_cell(self):
         selected_cell_pos = self.game_state.get_selected_ship_position()
-        pygame.draw.rect(
-            self.screen,
-            LIGHT_BLUE,
-            (
-                selected_cell_pos.x,
-                selected_cell_pos.y,
-                self.level.tile_size,
-                self.level.tile_size,
-            ),
-        )
+        self.draw_cell(LIGHT_BLUE, selected_cell_pos.x, selected_cell_pos.y)
 
     def draw_destinations(self):
         destinations = self.game_state.get_selected_ship_destinations()
         for destination in destinations:
-            pygame.draw.rect(
-                self.screen,
-                LIGHT_GREEN,
-                (
-                    destination.x + 1,
-                    destination.y + 1,
-                    self.level.tile_size - 1,
-                    self.level.tile_size - 1,
-                ),
-            )
+            self.draw_cell(LIGHT_GREEN, destination.x + 1, destination.y + 1, -1)
 
     def draw_attack_range(self):
         range_cells: list[ScreenPoint] = (
             self.game_state.get_selected_ship_attack_range()
         )
         for cell in range_cells:
-            pygame.draw.rect(
-                self.screen,
-                LIGHT_RED,
-                (
-                    cell.x + 1,
-                    cell.y + 1,
-                    self.level.tile_size - 1,
-                    self.level.tile_size - 1,
-                ),
-            )
+            self.draw_cell(LIGHT_RED, cell.x + 1, cell.y + 1, -1)
 
     def draw_grid(self):
-        for x in range(
-            self.screen_config.game_area_x,
-            self.screen_config.game_area_x + self.screen_config.game_area_width + 1,
-            self.level.tile_size,
-        ):
-            pygame.draw.line(
-                self.screen,
-                GREY,
-                (x, self.screen_config.game_area_y),
-                (
-                    x,
-                    self.screen_config.game_area_y
-                    + self.screen_config.game_area_height,
-                ),
-            )
-        for y in range(
-            self.screen_config.game_area_y,
-            self.screen_config.game_area_y + self.screen_config.game_area_height,
-            self.level.tile_size,
-        ):
-            pygame.draw.line(
-                self.screen,
-                GREY,
-                (self.screen_config.game_area_x, y),
-                (
-                    self.screen_config.game_area_x + self.screen_config.game_area_width,
-                    y,
-                ),
-            )
+        tiles_width = (self.screen_config.game_area_width + 1) // self.level.tile_size
+        tiles_height = self.screen_config.game_area_height // self.level.tile_size
+        effective_width = min(tiles_width, self.level.width)
+        effective_height = min(tiles_height, self.level.height)
+        for x in range(effective_width):
+            for y in range(effective_height):
+                point = self.point_converter.from_game_to_screen(Point(x,y), False)
+                self.draw_cell(GREY, point.x, point.y, fill=False)
 
     def update(self):
         pass
