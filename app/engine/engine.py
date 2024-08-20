@@ -102,6 +102,12 @@ class GameEngine:
     def get_all_ships(self) -> list[Ship]:
         return [x for v in self.ships.values() for x in v]
 
+    def get_player_by_ship(self, ship: Ship) -> Player | None:
+        for player, ships in self.ships.items():
+            if ship in ships:
+                return player
+        return None
+
     def find_current_player_ship_by_pos(self, position: Point) -> Ship | None:
         for s in self.ships[self.current_player]:
             if s.position == position:
@@ -144,7 +150,16 @@ class GameEngine:
     def find_all_destinations_by_ship(self, ship: Ship) -> list[Point]:
         if ship not in self.get_all_ships():
             return []
-        return self.__bfs(ship.position, ship.active_moves)
+        all_dest = self.__bfs(ship.position, ship.active_moves)
+        players_to_exclude = [
+            p for p in self.ships.keys() if p != self.get_player_by_ship(ship)
+        ]
+        for player in players_to_exclude:
+            for s in self.ships[player]:
+                if s.position in all_dest:
+                    all_dest.remove(s.position)
+
+        return all_dest
 
     def find_attack_range_by_ship(self, ship: Ship) -> list[Point]:
         if ship not in self.get_all_ships():

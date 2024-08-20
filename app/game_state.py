@@ -23,8 +23,8 @@ class GameState:
         self.engine = engine
         self.point_converter = point_converter
         self.selected_ship: Ship | None = None
-        self.selected_ship_destinations: list[ScreenPoint] | None = None
-        self.selected_ship_attack_range: list[ScreenPoint] | None = None
+        self.selected_ship_destinations: list[Point] | None = None
+        self.selected_ship_attack_range: list[Point] | None = None
         self.selection_mode: SelectionMode | None = None
 
     def switch_selection_mode(self):
@@ -54,44 +54,34 @@ class GameState:
         self.selection_mode = None
         logger.debug("Ship deselected")
 
-    def get_selected_ship_position(self) -> ScreenPoint:
-        return self.point_converter.from_game_to_screen(
-            self.selected_ship.position, center=False
-        )
+    def get_selected_ship_position(self) -> Point:
+        return self.selected_ship.position
 
     def reset_selected_ship_destinations(self, *args) -> None:
         destinations = self.engine.find_all_destinations_by_ship(self.selected_ship)
         self.selected_ship_destinations = [
-            self.point_converter.from_game_to_screen(d, center=False)
-            for d in destinations
-            if d != self.selected_ship.position
+            d for d in destinations if d != self.selected_ship.position
         ]
 
     def reset_selected_ship_attack_range(self, *args) -> None:
         attack_range = self.engine.find_attack_range_by_ship(self.selected_ship)
         self.selected_ship_attack_range = [
-            self.point_converter.from_game_to_screen(d, center=False)
-            for d in attack_range
-            if d != self.selected_ship.position
+            d for d in attack_range if d != self.selected_ship.position
         ]
 
-    def get_selected_ship_destinations(self) -> list[ScreenPoint]:
+    def get_selected_ship_destinations(self) -> list[Point]:
         if self.selected_ship_destinations is None:
             destinations = self.engine.find_all_destinations_by_ship(self.selected_ship)
             self.selected_ship_destinations = [
-                self.point_converter.from_game_to_screen(d, center=False)
-                for d in destinations
-                if d != self.selected_ship.position
+                d for d in destinations if d != self.selected_ship.position
             ]
         return self.selected_ship_destinations
 
-    def get_selected_ship_attack_range(self) -> list[ScreenPoint]:
+    def get_selected_ship_attack_range(self) -> list[Point]:
         if self.selected_ship_attack_range is None:
             attack_range = self.engine.find_attack_range_by_ship(self.selected_ship)
             self.selected_ship_attack_range = [
-                self.point_converter.from_game_to_screen(d, center=False)
-                for d in attack_range
-                if d != self.selected_ship.position
+                d for d in attack_range if d != self.selected_ship.position
             ]
         return self.selected_ship_attack_range
 

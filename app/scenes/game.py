@@ -42,7 +42,7 @@ class GameScene(Scene):
         for ship in all_ships:
             direction = "up" if ship.position.y > self.level.height / 2 else "down"
             position = self.point_converter.from_game_to_screen(ship.position)
-            self.ship_group.add(ShipSprite(position, direction))
+            self.ship_group.add(ShipSprite(ship.position, position, direction))
 
         self.game_engine.subscribe(Event.SHIP_MOVED, self._move_ship_sprite)
         self.game_engine.subscribe(
@@ -58,6 +58,9 @@ class GameScene(Scene):
         self.game_engine.subscribe(Event.GAME_OVER, self.game_over)
 
         self.font = SysFont("jetbrainsmononl", size=24, bold=True)
+
+        self.offset = Point(0, 0)
+
         logger.debug("Game scene initialized")
 
     def game_over(self, player_won: Player):  # temporary
@@ -74,13 +77,21 @@ class GameScene(Scene):
                 return
 
     def _move_ship_sprite(self, from_point: Point, to_point: Point) -> None:
-        from_pos = self.point_converter.from_game_to_screen(from_point)
-        to_pos = self.point_converter.from_game_to_screen(to_point)
+        from_pos = self.point_converter.from_game_to_screen(from_point - self.offset)
+        to_pos = self.point_converter.from_game_to_screen(to_point - self.offset)
         for sprite in self.ship_group.sprites():
             if sprite.rect.center == from_pos.as_tuple:
                 sprite.rect.center = to_pos.as_tuple
+                sprite._point = to_point
                 logger.debug("Ship sprite moved successfully")
                 return
+
+    def adjust_ships_for_offset(self):
+        for sprite in self.ship_group.sprites():
+            new_point: Point = sprite._point - self.offset
+            new_pos = self.point_converter.from_game_to_screen(new_point)
+
+            sprite.rect.center = new_pos.as_tuple
 
     def draw(self):
         self.screen.fill(BLACK)  # instead, draw by tile
@@ -149,19 +160,32 @@ class GameScene(Scene):
             self.screen, color, (x, y, width, width), width=0 if fill else 1
         )
 
+    def convert_adjust_point_for_offset(self, point: Point) -> ScreenPoint:
+        return self.point_converter.from_game_to_screen(
+            point - self.offset, center=False
+        )
+
     def draw_selected_cell(self):
-        selected_cell_pos = self.game_state.get_selected_ship_position()
+        selected_cell_pos = self.convert_adjust_point_for_offset(
+            self.game_state.get_selected_ship_position()
+        )
         self.draw_cell(LIGHT_BLUE, selected_cell_pos.x, selected_cell_pos.y)
 
     def draw_destinations(self):
-        destinations = self.game_state.get_selected_ship_destinations()
+        point_destinations = self.game_state.get_selected_ship_destinations()
+        destinations = [
+            self.convert_adjust_point_for_offset(p) for p in point_destinations
+        ]
         for destination in destinations:
             self.draw_cell(LIGHT_GREEN, destination.x + 1, destination.y + 1, -1)
 
     def draw_attack_range(self):
-        range_cells: list[ScreenPoint] = (
+        point_range_cells: list[Point] = (
             self.game_state.get_selected_ship_attack_range()
         )
+        range_cells = [
+            self.convert_adjust_point_for_offset(p) for p in point_range_cells
+        ]
         for cell in range_cells:
             self.draw_cell(LIGHT_RED, cell.x + 1, cell.y + 1, -1)
 
@@ -178,6 +202,28 @@ class GameScene(Scene):
     def update(self):
         pass
 
+    def update_offset(self, x: int, y: int):
+        if self.offset.x + x < 0 or self.offset.y + y < 0:
+            return
+
+        tiles_width = self.screen_config.game_area_width // self.level.tile_size
+        tiles_height = self.screen_config.game_area_height // self.level.tile_size
+        max_offset_x = self.level.width - tiles_width
+        max_offset_y = self.level.height - tiles_height
+
+        if max_offset_x <= 0 or max_offset_y <= 0:
+            return
+
+        if self.offset.x + x > max_offset_x or self.offset.y + y > max_offset_y:
+            return
+
+        self.offset.x += x
+        self.offset.y += y
+        logger.debug(f"{self.offset=}")
+
+        self.adjust_ships_for_offset()
+        self.draw()
+
     def handle_event(self, event: pygame.Event):
         if event.type == pygame.KEYDOWN:
             match event.key:
@@ -191,9 +237,20 @@ class GameScene(Scene):
                     )
                 case pygame.K_a:
                     self.game_state.switch_selection_mode()
+                case pygame.K_LEFT:
+                    self.update_offset(-1, 0)
+
+                case pygame.K_RIGHT:
+                    self.update_offset(1, 0)
+                case pygame.K_UP:
+                    self.update_offset(0, -1)
+                case pygame.K_DOWN:
+                    self.update_offset(0, 1)
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = ScreenPoint.from_screen()
-            mouse_pos_point = self.point_converter.from_screen_to_game(mouse_pos)
+            mouse_pos_point = (
+                self.point_converter.from_screen_to_game(mouse_pos) + self.offset
+            )
 
             if not self.screen_config.is_in_game_area(mouse_pos.x, mouse_pos.y):
                 logger.debug(f"Clicked outside of the game area: {mouse_pos_point}")
