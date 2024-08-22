@@ -3,10 +3,9 @@ from app.engine.engine import GameEngine
 from app.level.level import Level, load_levels
 from app.scenes.base import Scene
 from app.scenes.game import GameScene
-from app.ui.menu import Menu
+from app.ui.menu import Menu, MenuItem
 from app.utils.config import ScreenConfig
 from app.utils.constants import BLACK
-from app.utils.menu_item import MenuItem
 from pygame import Event
 
 
@@ -17,8 +16,11 @@ class MainMenu(Scene):
         self.screen = pygame.display.set_mode(
             (self.screen_config.window_width, self.screen_config.window_height)
         )
-        menu_rect = pygame.Rect(400,400,300,400)
-        menu_rect.center = (self.screen_config.window_width // 2, self.screen_config.window_height // 2)
+        menu_rect = pygame.Rect(400, 400, 300, 400)
+        menu_rect.center = (
+            self.screen_config.window_width // 2,
+            self.screen_config.window_height // 2,
+        )
         self.menu_items = [
             MenuItem(
                 title="New game",
@@ -58,5 +60,3 @@ class MainMenu(Scene):
 
     def quit_pressed(self):
         pygame.event.post(pygame.event.Event(pygame.QUIT))
-
-

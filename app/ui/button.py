@@ -34,7 +34,6 @@ class Button:
         self.text = self.font.render(self._text, True, color)
         self.text_rect = self.text.get_rect(center=self.rect.center)
 
-
     def on_click(self, event: Event):
         if self.is_hovered():
             self.callback()

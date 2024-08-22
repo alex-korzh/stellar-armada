@@ -1,7 +1,7 @@
 import logging
 
 import pygame
-from pygame.freetype import SysFont
+from pygame.font import SysFont
 
 from app.engine import Player
 from app.engine.engine import Event, GameEngine
@@ -11,6 +11,7 @@ from app.level.level import Level
 from app.scenes.base import Scene
 from app.scenes.game_over import GameOver
 from app.sprites.ship import ShipSprite
+from app.ui.panel import Label, VPanel
 from app.utils.config import ScreenConfig
 from app.utils.constants import BLACK, GREY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_RED
 from app.utils.point_converter import PointConverter
@@ -54,6 +55,8 @@ class GameScene(Scene):
         self.game_engine.subscribe(
             Event.NEXT_TURN, self.game_state.reset_ship_selection
         )
+        self.game_engine.subscribe(Event.NEXT_TURN, self.update_left_panel)
+
         self.game_engine.subscribe(Event.SHIP_DESTROYED, self._remove_ship_sprite)
         self.game_engine.subscribe(Event.GAME_OVER, self.game_over)
 
@@ -61,7 +64,50 @@ class GameScene(Scene):
 
         self.offset = Point(0, 0)
 
+        self.left_panel = VPanel(
+            [
+                Label(f"Player: {self.game_engine.current_player.name}"),
+                Label(f"Turn: {self.game_engine.turn}"),
+            ],
+        )
+        self.left_panel.build(
+            self.font,
+            pygame.Rect(
+                0, 0, screen_config.game_area_x - 1, screen_config.window_height
+            ),
+        )
+        self.right_panel = VPanel([])
+        self.right_panel.build(
+            self.font,
+            pygame.Rect(
+                screen_config.game_area_x + screen_config.game_area_width,
+                0,
+                screen_config.game_area_x - 1,
+                screen_config.window_height,
+            ),
+        )
+
         logger.debug("Game scene initialized")
+
+    def update_left_panel(self):
+        self.left_panel.update(
+            data=[
+                Label(f"Player: {self.game_engine.current_player.name}"),
+                Label(f"Turn: {self.game_engine.turn}"),
+            ]
+        )
+
+    def update_right_panel(self):
+        if self.game_state.is_ship_selected():
+            ship = self.game_state.selected_ship
+            self.right_panel.update(
+                data=[
+                    Label(f"HP: {ship.current_hp}/{ship.hp}"),
+                    Label(f"Mode: {self.game_state.selection_mode.value}"),
+                ]
+            )
+        else:
+            self.right_panel.update(data=[])
 
     def game_over(self, player_won: Player):  # temporary
         self.next_scene = GameOver(
@@ -103,46 +149,11 @@ class GameScene(Scene):
                 self.draw_destinations()
             elif self.game_state.selection_mode == SelectionMode.ATTACK:
                 self.draw_attack_range()
-        # self.draw_text()
         self.ship_group.draw(self.screen)
         self.ship_group.update()
 
-    # def draw_left_panel(self):
-    #     if not self.game_state.is_ship_selected():
-    #         return
-    #     data = self.game_state.selected_ship.infodump()
-    #     shift = 0
-    #     for i in data.split("\n"):
-    #         text_rect = self.font.render_to(
-    #             self.screen,
-    #             (0, 0 + shift),
-    #             i,
-    #             (255, 255, 255),
-    #         )
-    #         shift += text_rect.h * 1.5
-    #     self.font.render_to(
-    #         self.screen,
-    #         (0, 0 + shift),
-    #         f"Mode: {self.game_state.selection_mode.value}",
-    #         (255, 255, 255),
-    #     )
-
-    # def draw_right_panel(self):
-    #     x = self.screen_config.game_area_x + self.screen_config.game_area_width + 5
-    #     data = self.game_state.get_game_info()
-    #     shift = 0
-    #     for i in data.split("\n"):
-    #         text_rect = self.font.render_to(
-    #             self.screen,
-    #             (x, 0 + shift),
-    #             i,
-    #             (255, 255, 255),
-    #         )
-    #         shift += text_rect.h * 1.5
-
-    # def draw_text(self):
-    #     self.draw_left_panel()
-    #     self.draw_right_panel()
+        self.left_panel.draw(self.screen)
+        self.right_panel.draw(self.screen)
 
     def draw_cell(
         self,
@@ -200,7 +211,7 @@ class GameScene(Scene):
                 self.draw_cell(GREY, point.x, point.y, fill=False)
 
     def update(self):
-        pass
+        self.update_right_panel()
 
     def update_offset(self, x: int, y: int):
         if self.offset.x + x < 0 or self.offset.y + y < 0:
@@ -237,6 +248,7 @@ class GameScene(Scene):
                     )
                 case pygame.K_a:
                     self.game_state.switch_selection_mode()
+                    self.update_right_panel()
                 case pygame.K_LEFT:
                     self.update_offset(-1, 0)
 
