@@ -25,7 +25,7 @@ class Label(UIElement):
         if not self.text:
             return
         self.rendered_text = self.font.render(self.text, True, WHITE)
-        self.rendered_text_rect = self.rendered_text.get_rect(center=self.rect.center)
+        self.rendered_text_rect = self.rendered_text.get_rect(topleft=self.rect.topleft)
 
     def draw(self, screen: pygame.Surface):
         screen.blit(self.rendered_text, self.rendered_text_rect)
