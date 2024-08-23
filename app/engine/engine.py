@@ -20,9 +20,12 @@ class Event(Enum):
 
 
 # TODO proper ship types
-def generate_random_ships(topleft: Point, bottomright: Point) -> list[Ship]:
+def generate_random_ships(
+    topleft: Point,
+    bottomright: Point,
+    limit: int = 1,
+) -> list[Ship]:
     ships = []
-    limit = 1  # can be randomized later
     for _ in range(limit):
         ships.append(
             Ship(
@@ -48,6 +51,8 @@ class GameEngine:
 
         self.width = width_tiles
         self.height = height_tiles
+
+        logger.debug(f"{self.width=}, {self.height=}")
 
         # Specific implementation: randomized ships, 2 players.
         # Will be generalized later.
