@@ -40,16 +40,22 @@ class GameRunner:
             self.clock.tick(60)
 
 
-def run_game(debug: bool = True):
+def run_game(debug: bool = True, screen_resolution: tuple[int, int] | None = None):
     if debug:
         logger.root.setLevel(logging.DEBUG)
     else:
         logger.root.setLevel(logging.INFO)
     pygame.init()
 
-    config: ScreenConfig = ScreenConfig(
-        pygame.display.Info().current_h, pygame.display.Info().current_w
-    )
+    if not screen_resolution:
+        screen_resolution = (
+            pygame.display.Info().current_w,
+            pygame.display.Info().current_h,
+        )
+    else:
+        logger.debug("Screen resolution is set manually")
+
+    config: ScreenConfig = ScreenConfig(*screen_resolution)
     pygame.display.set_mode((config.window_width, config.window_height))
     scene = MainMenu(config)
     runner = GameRunner(scene)

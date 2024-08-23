@@ -7,12 +7,14 @@ logger = logging.getLogger(__name__)
 
 
 class ScreenConfig:
-    def __init__(self, screen_height: int, screen_width: int):
+    def __init__(self, screen_width: int, screen_height: int):
         for res in reversed(SCREEN_RESOLUTIONS):
             if res[0] <= screen_width and res[1] <= screen_height:
                 self.window_width = res[0]
                 self.window_height = res[1]
                 break
+        else:
+            raise Exception("Incorrect screen resolution")
 
         self.game_area_width: int = self.window_height
         self.game_area_height: int = self.window_height
