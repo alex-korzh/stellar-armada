@@ -11,9 +11,7 @@ class GameOver(Scene):
     def __init__(self, screen_config: ScreenConfig, winner: Player, turns: int):
         super().__init__()
         self.screen_config = screen_config
-        self.screen = pygame.display.set_mode(
-            (self.screen_config.window_width, self.screen_config.window_height)
-        )
+        self.screen = pygame.display.get_surface()
         self.font = SysFont("jetbrainsmononl", size=120, bold=True)
         self.winner = winner
         self.turns = turns

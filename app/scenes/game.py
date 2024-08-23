@@ -32,9 +32,7 @@ class GameScene(Scene):
 
         self.point_converter = PointConverter(screen_config, level.tile_size)
         self.level = level
-        self.screen = pygame.display.set_mode(
-            (self.screen_config.window_width, self.screen_config.window_height)
-        )
+        self.screen = pygame.display.get_surface()
         self.game_engine = game
         self.game_state = GameState(game, self.point_converter)
 

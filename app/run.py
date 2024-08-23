@@ -46,7 +46,9 @@ def run_game(debug: bool = True):
     else:
         logger.root.setLevel(logging.INFO)
     pygame.init()
+    logger.debug(f"{pygame.display.Info().current_w}x{pygame.display.Info().current_h}")
     config: ScreenConfig = ScreenConfig(pygame.display.Info().current_h)
+    pygame.display.set_mode((config.window_width, config.window_height))
     scene = MainMenu(config)
     runner = GameRunner(scene)
     runner.run()

@@ -6,16 +6,13 @@ from app.scenes.game import GameScene
 from app.ui.menu import Menu, MenuItem
 from app.utils.config import ScreenConfig
 from app.utils.constants import BLACK
-from pygame import Event
 
 
 class MainMenu(Scene):
     def __init__(self, screen_config: ScreenConfig):
         super().__init__()
         self.screen_config = screen_config
-        self.screen = pygame.display.set_mode(
-            (self.screen_config.window_width, self.screen_config.window_height)
-        )
+        self.screen = pygame.display.get_surface()
         menu_rect = pygame.Rect(400, 400, 300, 400)
         menu_rect.center = (
             self.screen_config.window_width // 2,
@@ -40,7 +37,7 @@ class MainMenu(Scene):
         ]
         self.menu = Menu(menu_rect, self.menu_items)
 
-    def handle_event(self, event: Event):
+    def handle_event(self, event: pygame.Event):
         self.menu.handle_event(event)
 
     def update(self):
