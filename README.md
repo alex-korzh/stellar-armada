@@ -13,4 +13,4 @@ Plans:
     * right panel: current player info: ships, current ship: moves, hp, mode, weapons; buttons to switch weapons/mode
 3. [x] Camera, (minimap?)
 4. [ ] Utilize `update` method in scenes(?)
-5. [ ] Different screen sizes: adapt grid to show whole cells, adapt panels to show whole text. Allow resize/fullscreen (in menu perhaps)
+5. [ ] Different screen sizes: adapt grid to show whole cells, adapt panels to show whole text. Allow resize/fullscreen (in menu perhaps), dont't draw ship when out of game area
