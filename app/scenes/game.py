@@ -228,7 +228,6 @@ class GameScene(Scene):
 
         self.offset.x += x
         self.offset.y += y
-        logger.debug(f"{self.offset=}")
 
         self.adjust_ships_for_offset()
         self.draw()
