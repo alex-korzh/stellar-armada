@@ -10,6 +10,7 @@ from app.game_state import GameState, SelectionMode
 from app.level.level import Level
 from app.scenes.base import Scene
 from app.scenes.game_over import GameOver
+from app.sprites.groups import CameraGroup
 from app.sprites.ship import ShipSprite
 from app.ui.panel import Label, VPanel
 from app.utils.config import ScreenConfig
@@ -36,7 +37,7 @@ class GameScene(Scene):
         self.game_engine = game
         self.game_state = GameState(game, self.point_converter)
 
-        self.ship_group = pygame.sprite.Group()
+        self.ship_group = CameraGroup(screen_config=screen_config)
         all_ships = self.game_engine.get_all_ships()
         for ship in all_ships:
             direction = "up" if ship.position.y > self.level.height / 2 else "down"
