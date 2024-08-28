@@ -70,6 +70,7 @@ class GameScene(Scene):
             Event.NEXT_TURN, self.game_state.reset_ship_selection
         )
         self.game_engine.subscribe(Event.NEXT_TURN, self.update_left_panel)
+        self.game_engine.subscribe(Event.NEXT_TURN, self.update_minimap)
 
         self.game_engine.subscribe(Event.SHIP_DESTROYED, self._remove_ship_sprite)
         self.game_engine.subscribe(Event.GAME_OVER, self.game_over)
@@ -136,7 +137,7 @@ class GameScene(Scene):
                 }
             )
         else:
-            self.right_panel.update(data={})
+            self.right_panel.update(data={}, clear=True)
 
     def update_minimap(self, *_):
         self.left_panel[MINIMAP_ID].update(

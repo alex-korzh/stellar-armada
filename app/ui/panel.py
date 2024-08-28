@@ -21,10 +21,9 @@ class VPanel(UIElement):
         self.update(data=self.data)
 
     def update(self, data: dict[str, UIElement], **kwargs) -> None:
-        """
-        kwargs:
-            data: dict[str, UIElement]
-        """
+        if kwargs.get("clear") is True:
+            self.data.clear()
+            return
         self.data.update(data)
         if len(self.data) == 0:
             return
