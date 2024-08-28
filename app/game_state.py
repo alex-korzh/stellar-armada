@@ -5,7 +5,6 @@ from app.engine.engine import GameEngine
 from app.engine.point import Point
 from app.engine.ship import Ship
 from app.utils.point_converter import PointConverter
-from app.utils.screen_point import ScreenPoint
 
 
 logger = logging.getLogger(__name__)
@@ -84,6 +83,14 @@ class GameState:
                 d for d in attack_range if d != self.selected_ship.position
             ]
         return self.selected_ship_attack_range
+
+    def get_all_allied_positions(self) -> list[Point]:
+        ships = self.engine.get_all_allied_ships()
+        return [s.position for s in ships]
+
+    def get_all_enemy_positions(self) -> list[Point]:
+        ships = self.engine.get_all_enemy_ships()
+        return [s.position for s in ships]
 
     def get_game_info(self) -> str:
         return f"Turn: {self.engine.turn}\nPlayer: {self.engine.current_player}"

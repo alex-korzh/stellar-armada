@@ -29,3 +29,11 @@ class PointConverter:
             y += self.cell_size // 2
 
         return ScreenPoint(x, y)
+
+    @staticmethod
+    def from_game_to_minimap(
+        x: int, y: int, cell_size: int, game_point: Point
+    ) -> ScreenPoint:
+        s_x = cell_size * game_point.x + x + cell_size // 2
+        s_y = cell_size * game_point.y + y + cell_size // 2
+        return ScreenPoint(s_x, s_y)

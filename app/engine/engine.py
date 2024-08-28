@@ -105,6 +105,13 @@ class GameEngine:
     def get_all_ships(self) -> list[Ship]:
         return [x for v in self.ships.values() for x in v]
 
+    def get_all_allied_ships(self) -> list[Ship]:
+        # there might be more than one player in an alliance in the future
+        return self.ships[self.current_player]
+
+    def get_all_enemy_ships(self) -> list[Ship]:
+        return [i for p, s in self.ships.items() for i in s if p != self.current_player]
+
     def get_player_by_ship(self, ship: Ship) -> Player | None:
         for player, ships in self.ships.items():
             if ship in ships:

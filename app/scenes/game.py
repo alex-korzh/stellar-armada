@@ -59,6 +59,7 @@ class GameScene(Scene):
             self.ship_group.add(ShipSprite(ship.position, position, direction))
 
         self.game_engine.subscribe(Event.SHIP_MOVED, self._move_ship_sprite)
+        self.game_engine.subscribe(Event.SHIP_MOVED, self.update_minimap)
         self.game_engine.subscribe(
             Event.SHIP_MOVED, self.game_state.reset_selected_ship_destinations
         )
@@ -85,8 +86,8 @@ class GameScene(Scene):
                     screen_config,
                     self.level.height * CELL_SIZE,
                     self.level.width * CELL_SIZE,
-                    [],
-                    [],
+                    self.game_state.get_all_allied_positions(),
+                    self.game_state.get_all_enemy_positions(),
                 ),
                 PLAYER_LABEL_ID: Label(
                     f"Player: {self.game_engine.current_player.name}"
@@ -137,12 +138,12 @@ class GameScene(Scene):
         else:
             self.right_panel.update(data={})
 
-    def update_minimap(self):
+    def update_minimap(self, **_):
         self.left_panel[MINIMAP_ID].update(
             offset_x=self.offset.x * CELL_SIZE,
             offset_y=self.offset.y * CELL_SIZE,
-            allies=[],
-            enemies=[],
+            allies=self.game_state.get_all_allied_positions(),
+            enemies=self.game_state.get_all_enemy_positions(),
         )
 
     def game_over(self, player_won: Player):  # temporary

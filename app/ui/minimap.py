@@ -1,14 +1,17 @@
 import logging
 
 import pygame
+
+from app.engine import Point
 from app.ui.base import UIElement
 from app.utils.config import ScreenConfig
-from app.utils.constants import WHITE, BLUE
-from app.utils.screen_point import ScreenPoint
+from app.utils.constants import WHITE, BLUE, GREEN, CELL_SIZE, RED
+from app.utils.point_converter import PointConverter
 
 logger = logging.getLogger(__name__)
 
 
+# FIXME: bottom camera boundary is wrong
 class Minimap(UIElement):
     def __init__(
         self,
@@ -17,8 +20,8 @@ class Minimap(UIElement):
         screen_config: ScreenConfig,
         level_height: int,  # in pixels
         level_width: int,  # in pixels
-        allies: list[ScreenPoint],
-        enemies: list[ScreenPoint],
+        allies: list[Point],
+        enemies: list[Point],
     ):
         self.offset_x = offset_x
         self.offset_y = offset_y
@@ -69,28 +72,46 @@ class Minimap(UIElement):
             self.screen_config.game_area_width // self.width_q,
             self.screen_config.game_area_height // self.height_q,
         )
-        # todo change when starting position will change
+        # change when starting position will change
         self.camera_rect.topleft = self.level_rect.topleft
 
     def _update_camera_rect(self):
         self.camera_rect_adjusted = pygame.Rect(self.camera_rect)
         self.camera_rect_adjusted.centerx += self.offset_x // self.width_q
         self.camera_rect_adjusted.centery += self.offset_y // self.height_q
-        logger.debug(f"Camera rect updated: {self.camera_rect_adjusted}")
+
+    def _update_ships(self):
+        self.allies_adjusted = [
+            PointConverter.from_game_to_minimap(
+                self.level_rect.x, self.level_rect.y, CELL_SIZE // self.width_q, a
+            )
+            for a in self.allies
+        ]
+        self.enemies_adjusted = [
+            PointConverter.from_game_to_minimap(
+                self.level_rect.x, self.level_rect.y, CELL_SIZE // self.width_q, e
+            )
+            for e in self.enemies
+        ]
 
     def update(
         self,
         offset_x: int,
         offset_y: int,
-        allies: list[ScreenPoint],
-        enemies: list[ScreenPoint],
+        allies: list[Point],
+        enemies: list[Point],
     ):
         self.offset_x = offset_x
         self.offset_y = offset_y
         self.allies = allies
         self.enemies = enemies
         self._update_camera_rect()
+        self._update_ships()
 
     def draw(self, screen: pygame.Surface):
         pygame.draw.rect(screen, BLUE, self.camera_rect_adjusted, width=2)
         pygame.draw.rect(screen, WHITE, self.level_rect, width=2)
+        for a in self.allies_adjusted:
+            pygame.draw.circle(screen, GREEN, a.as_tuple, 3)
+        for e in self.enemies_adjusted:
+            pygame.draw.circle(screen, RED, e.as_tuple, 3)
