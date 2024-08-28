@@ -4,54 +4,28 @@ from app.ui.base import UIElement
 from app.utils.constants import WHITE
 
 
-class Label(UIElement):
-    def __init__(self, text: str):
-        self.text = text
-
-    def build(self, font: pygame.font.Font, rect: pygame.Rect) -> None:
-        self.font = font
-        self.rect = rect
-        self.height = self.font.get_linesize()
-        self.rect.height = self.height
-        if self.text:
-            self.update(text=self.text)
-
-    def update(self, **kwargs) -> None:
-        """
-        kwargs:
-            text: str
-        """
-        self.text = kwargs.get("text", self.text)
-        if not self.text:
-            return
-        self.rendered_text = self.font.render(self.text, True, WHITE)
-        self.rendered_text_rect = self.rendered_text.get_rect(topleft=self.rect.topleft)
-
-    def draw(self, screen: pygame.Surface):
-        screen.blit(self.rendered_text, self.rendered_text_rect)
-
-
 class VPanel(UIElement):
     def __init__(
         self,
-        data: list[UIElement],
+        data: dict[str, UIElement],
     ) -> None:
         self.padding = 2
         self.data = data
+
+    def __getitem__(self, key: str) -> UIElement | None:
+        return self.data.get(key)
 
     def build(self, font: pygame.font.Font, rect: pygame.Rect) -> None:
         self.rect = rect
         self.font = font
         self.update(data=self.data)
 
-    def update(self, **kwargs) -> None:
+    def update(self, data: dict[str, UIElement], **kwargs) -> None:
         """
         kwargs:
-            data: list[UIElement]
+            data: dict[str, UIElement]
         """
-        self.data: list[UIElement] = kwargs.get("data", self.data)
-        if self.data is None:
-            return
+        self.data.update(data)
         if len(self.data) == 0:
             return
         item_height = self.rect.height // len(self.data)
@@ -60,21 +34,21 @@ class VPanel(UIElement):
                 "jetbrainsmononl", self.base_font_size - 1, bold=True
             )
         shift = 0
-        for item in self.data:
+        for k, item in self.data.items():
             item.build(
-                self.font,
-                pygame.Rect(
+                font=self.font,
+                rect=pygame.Rect(
                     self.rect.left + self.padding,
                     self.rect.top + shift,
                     self.rect.width,
-                    0,
+                    self.rect.width,
                 ),
             )
             shift += item.height
 
     def draw(self, screen: pygame.Surface):
         pygame.draw.rect(screen, WHITE, self.rect, width=2)
-        for item in self.data:
+        for k, item in self.data.items():
             item.draw(screen)
 
     def handle_event(self, event: pygame.Event):

@@ -29,3 +29,9 @@ SCREEN_RESOLUTIONS = [
     (1920, 1080),
     (2560, 1440),
 ]
+
+MINIMAP_ID = "minimap"
+PLAYER_LABEL_ID = "label_player"
+TURN_LABEL_ID = "label_turn"
+HP_LABEL_ID = "label_hp"
+MODE_LABEL_ID = "label_mode"

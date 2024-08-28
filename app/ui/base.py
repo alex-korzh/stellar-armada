@@ -4,6 +4,11 @@ import pygame
 
 
 class UIElement(ABC):
+    """
+    Base class for all UI elements
+    use build() to initialize the placement of the element
+    """
+
     rect: pygame.Rect
     font: pygame.font.Font | None
     height: int

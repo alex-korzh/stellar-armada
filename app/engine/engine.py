@@ -52,8 +52,6 @@ class GameEngine:
         self.width = width_tiles
         self.height = height_tiles
 
-        logger.debug(f"{self.width=}, {self.height=}")
-
         # Specific implementation: randomized ships, 2 players.
         # Will be generalized later.
         self.players = [

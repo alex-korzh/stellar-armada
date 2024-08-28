@@ -12,9 +12,23 @@ from app.scenes.base import Scene
 from app.scenes.game_over import GameOver
 from app.sprites.groups import CameraGroup
 from app.sprites.ship import ShipSprite
-from app.ui.panel import Label, VPanel
+from app.ui.label import Label
+from app.ui.minimap import Minimap
+from app.ui.panel import VPanel
 from app.utils.config import ScreenConfig
-from app.utils.constants import BLACK, GREY, LIGHT_BLUE, LIGHT_GREEN, LIGHT_RED
+from app.utils.constants import (
+    BLACK,
+    GREY,
+    LIGHT_BLUE,
+    LIGHT_GREEN,
+    LIGHT_RED,
+    CELL_SIZE,
+    MINIMAP_ID,
+    PLAYER_LABEL_ID,
+    TURN_LABEL_ID,
+    HP_LABEL_ID,
+    MODE_LABEL_ID,
+)
 from app.utils.point_converter import PointConverter
 from app.utils.screen_point import ScreenPoint
 
@@ -64,10 +78,21 @@ class GameScene(Scene):
         self.offset = Point(0, 0)
 
         self.left_panel = VPanel(
-            [
-                Label(f"Player: {self.game_engine.current_player.name}"),
-                Label(f"Turn: {self.game_engine.turn}"),
-            ],
+            {
+                MINIMAP_ID: Minimap(
+                    self.offset.x,
+                    self.offset.y,
+                    screen_config,
+                    self.level.height * CELL_SIZE,
+                    self.level.width * CELL_SIZE,
+                    [],
+                    [],
+                ),
+                PLAYER_LABEL_ID: Label(
+                    f"Player: {self.game_engine.current_player.name}"
+                ),
+                TURN_LABEL_ID: Label(f"Turn: {self.game_engine.turn}"),
+            },
         )
         self.left_panel.build(
             self.font,
@@ -75,7 +100,7 @@ class GameScene(Scene):
                 0, 0, screen_config.game_area_x - 1, screen_config.window_height
             ),
         )
-        self.right_panel = VPanel([])
+        self.right_panel = VPanel({})
         self.right_panel.build(
             self.font,
             pygame.Rect(
@@ -90,23 +115,35 @@ class GameScene(Scene):
 
     def update_left_panel(self):
         self.left_panel.update(
-            data=[
-                Label(f"Player: {self.game_engine.current_player.name}"),
-                Label(f"Turn: {self.game_engine.turn}"),
-            ]
+            data={
+                PLAYER_LABEL_ID: Label(
+                    f"Player: {self.game_engine.current_player.name}"
+                ),
+                TURN_LABEL_ID: Label(f"Turn: {self.game_engine.turn}"),
+            }
         )
 
     def update_right_panel(self):
         if self.game_state.is_ship_selected():
             ship = self.game_state.selected_ship
             self.right_panel.update(
-                data=[
-                    Label(f"HP: {ship.current_hp}/{ship.hp}"),
-                    Label(f"Mode: {self.game_state.selection_mode.value}"),
-                ]
+                data={
+                    HP_LABEL_ID: Label(f"HP: {ship.current_hp}/{ship.hp}"),
+                    MODE_LABEL_ID: Label(
+                        f"Mode: {self.game_state.selection_mode.value}"
+                    ),
+                }
             )
         else:
-            self.right_panel.update(data=[])
+            self.right_panel.update(data={})
+
+    def update_minimap(self):
+        self.left_panel[MINIMAP_ID].update(
+            offset_x=self.offset.x * CELL_SIZE,
+            offset_y=self.offset.y * CELL_SIZE,
+            allies=[],
+            enemies=[],
+        )
 
     def game_over(self, player_won: Player):  # temporary
         self.next_scene = GameOver(
@@ -231,6 +268,7 @@ class GameScene(Scene):
         self.offset.y += y
 
         self.adjust_ships_for_offset()
+        self.update_minimap()
         self.draw()
 
     def handle_event(self, event: pygame.Event):
