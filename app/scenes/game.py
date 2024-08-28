@@ -138,7 +138,7 @@ class GameScene(Scene):
         else:
             self.right_panel.update(data={})
 
-    def update_minimap(self, **_):
+    def update_minimap(self, *_):
         self.left_panel[MINIMAP_ID].update(
             offset_x=self.offset.x * CELL_SIZE,
             offset_y=self.offset.y * CELL_SIZE,
