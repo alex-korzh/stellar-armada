@@ -1,6 +1,7 @@
 import logging
 
 import pygame
+from pygame import SCALED
 
 from app.scenes.base import Scene
 
@@ -56,7 +57,10 @@ def run_game(debug: bool = True, screen_resolution: tuple[int, int] | None = Non
         logger.debug("Screen resolution is set manually")
 
     config: ScreenConfig = ScreenConfig(*screen_resolution)
-    pygame.display.set_mode((config.window_width, config.window_height))
+    pygame.display.set_mode(
+        (config.window_width, config.window_height),
+        flags=SCALED,
+    )
     scene = MainMenu(config)
     runner = GameRunner(scene)
     runner.run()
