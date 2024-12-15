@@ -4,6 +4,11 @@ import json
 from pathlib import Path
 
 
+
+# TODO think: levels as png images, pixel color = tile type
+# OR levels as binary
+
+
 class TileType(str, Enum):
     SPACE = "S"
 
