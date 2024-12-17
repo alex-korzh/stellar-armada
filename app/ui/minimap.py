@@ -2,7 +2,7 @@ import logging
 
 import pygame
 
-from app.engine import Point
+from app.utils.math import V2
 from app.ui.base import UIElement
 from app.utils.config import ScreenConfig
 from app.utils.constants import WHITE, BLUE, GREEN, CELL_SIZE, RED
@@ -20,8 +20,8 @@ class Minimap(UIElement):
         screen_config: ScreenConfig,
         level_height: int,  # in pixels
         level_width: int,  # in pixels
-        allies: list[Point],
-        enemies: list[Point],
+        allies: list[V2],
+        enemies: list[V2],
     ):
         self.offset_x = offset_x
         self.offset_y = offset_y
@@ -69,8 +69,8 @@ class Minimap(UIElement):
         self.camera_rect = pygame.Rect(
             0,
             0,
-            self.screen_config.game_area_width // self.width_q,
-            self.screen_config.game_area_height // self.height_q,
+            self.screen_config.game_area.w // self.width_q,
+            self.screen_config.game_area.h // self.height_q,
         )
         # change when starting position will change
         self.camera_rect.topleft = self.level_rect.topleft
@@ -98,8 +98,8 @@ class Minimap(UIElement):
         self,
         offset_x: int,
         offset_y: int,
-        allies: list[Point],
-        enemies: list[Point],
+        allies: list[V2],
+        enemies: list[V2],
     ):
         self.offset_x = offset_x
         self.offset_y = offset_y
@@ -112,6 +112,6 @@ class Minimap(UIElement):
         pygame.draw.rect(screen, BLUE, self.camera_rect_adjusted, width=2)
         pygame.draw.rect(screen, WHITE, self.level_rect, width=2)
         for a in self.allies_adjusted:
-            pygame.draw.circle(screen, GREEN, a.as_tuple, 3)
+            pygame.draw.circle(screen, GREEN, a.as_tuple(), 3)
         for e in self.enemies_adjusted:
-            pygame.draw.circle(screen, RED, e.as_tuple, 3)
+            pygame.draw.circle(screen, RED, e.as_tuple(), 3)

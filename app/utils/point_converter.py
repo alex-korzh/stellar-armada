@@ -1,8 +1,7 @@
 import logging
 
-from app.engine.point import Point
+from app.utils.math import V2
 from app.utils.config import ScreenConfig
-from app.utils.screen_point import ScreenPoint
 
 logger = logging.getLogger(__name__)
 
@@ -12,28 +11,25 @@ class PointConverter:
         self.config = config
         self.cell_size = cell_size
 
-    def from_screen_to_game(self, screen_point: ScreenPoint) -> Point:
-        rx = screen_point.x - self.config.game_area_x
-        ry = screen_point.y - self.config.game_area_y
-        rx = rx // self.cell_size
-        ry = ry // self.cell_size
-        return Point(rx, ry)
+    def from_screen_to_game(self, screen_point: V2) -> V2:
+        r = screen_point - V2(*self.config.game_area.topleft)
+        r //= self.cell_size
+        return V2(r.x, r.y)
 
     def from_game_to_screen(
-        self, game_point: Point, center: bool = True
-    ) -> ScreenPoint:
-        x = self.cell_size * game_point.x + self.config.game_area_x
-        y = self.cell_size * game_point.y + self.config.game_area_y
+        self, game_point: V2, center: bool = True
+    ) -> V2:
+        v = game_point * self.cell_size + V2(*self.config.game_area.topleft)
         if center:
-            x += self.cell_size // 2
-            y += self.cell_size // 2
+            v.x += self.cell_size // 2
+            v.y += self.cell_size // 2
 
-        return ScreenPoint(x, y)
+        return v
 
     @staticmethod
     def from_game_to_minimap(
-        x: int, y: int, cell_size: int, game_point: Point
-    ) -> ScreenPoint:
+        x: int, y: int, cell_size: int, game_point: V2
+    ) -> V2:
         s_x = cell_size * game_point.x + x + cell_size // 2
         s_y = cell_size * game_point.y + y + cell_size // 2
-        return ScreenPoint(s_x, s_y)
+        return V2(s_x, s_y)

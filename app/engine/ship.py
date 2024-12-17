@@ -1,18 +1,18 @@
 from dataclasses import dataclass
 
-from app.engine.point import Point
+from app.utils.math import V2
 from app.engine.weapons import Weapon
 
 
 @dataclass
 class Ship:
-    position: Point
+    position: V2
     weapons: list[Weapon]
     hp: int = 100
     current_hp: int = 100
     speed: int = 8
     active_moves: int = speed
-    selected_weapon: Weapon = None
+    selected_weapon: Weapon | None = None
 
     def __post_init__(self):
         self.selected_weapon = self.weapons[0]

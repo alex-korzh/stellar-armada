@@ -2,7 +2,7 @@ import logging
 from enum import Enum
 
 from app.engine.engine import GameEngine
-from app.engine.point import Point
+from app.utils.math import V2
 from app.engine.ship import Ship
 from app.utils.point_converter import PointConverter
 
@@ -22,8 +22,8 @@ class GameState:
         self.engine = engine
         self.point_converter = point_converter
         self.selected_ship: Ship | None = None
-        self.selected_ship_destinations: list[Point] | None = None
-        self.selected_ship_attack_range: list[Point] | None = None
+        self.selected_ship_destinations: list[V2] | None = None
+        self.selected_ship_attack_range: list[V2] | None = None
         self.selection_mode: SelectionMode | None = None
 
     def switch_selection_mode(self):
@@ -32,7 +32,7 @@ class GameState:
         else:
             self.selection_mode = SelectionMode.MOVE
 
-    def try_select_ship(self, point: Point) -> bool:
+    def try_select_ship(self, point: V2) -> bool:
         ship: Ship | None = self.engine.find_current_player_ship_by_pos(point)
         if ship:
             self.selected_ship = ship
@@ -53,7 +53,7 @@ class GameState:
         self.selection_mode = None
         logger.debug("Ship deselected")
 
-    def get_selected_ship_position(self) -> Point:
+    def get_selected_ship_position(self) -> V2:
         return self.selected_ship.position
 
     def reset_selected_ship_destinations(self, *args) -> None:
@@ -68,7 +68,7 @@ class GameState:
             d for d in attack_range if d != self.selected_ship.position
         ]
 
-    def get_selected_ship_destinations(self) -> list[Point]:
+    def get_selected_ship_destinations(self) -> list[V2]:
         if self.selected_ship_destinations is None:
             destinations = self.engine.find_all_destinations_by_ship(self.selected_ship)
             self.selected_ship_destinations = [
@@ -76,7 +76,7 @@ class GameState:
             ]
         return self.selected_ship_destinations
 
-    def get_selected_ship_attack_range(self) -> list[Point]:
+    def get_selected_ship_attack_range(self) -> list[V2]:
         if self.selected_ship_attack_range is None:
             attack_range = self.engine.find_attack_range_by_ship(self.selected_ship)
             self.selected_ship_attack_range = [
@@ -84,11 +84,11 @@ class GameState:
             ]
         return self.selected_ship_attack_range
 
-    def get_all_allied_positions(self) -> list[Point]:
+    def get_all_allied_positions(self) -> list[V2]:
         ships = self.engine.get_all_allied_ships()
         return [s.position for s in ships]
 
-    def get_all_enemy_positions(self) -> list[Point]:
+    def get_all_enemy_positions(self) -> list[V2]:
         ships = self.engine.get_all_enemy_ships()
         return [s.position for s in ships]
 

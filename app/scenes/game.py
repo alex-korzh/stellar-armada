@@ -5,7 +5,7 @@ from pygame.font import SysFont
 
 from app.engine import Player
 from app.engine.engine import Event, GameEngine
-from app.engine.point import Point
+from app.utils.math import V2
 from app.game_state import GameState, SelectionMode
 from app.level.level import Level
 from app.scenes.base import Scene
@@ -30,7 +30,6 @@ from app.utils.constants import (
     MODE_LABEL_ID,
 )
 from app.utils.point_converter import PointConverter
-from app.utils.screen_point import ScreenPoint
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +76,7 @@ class GameScene(Scene):
 
         self.font = SysFont("jetbrainsmononl", size=24, bold=True)
 
-        self.offset = Point(0, 0)
+        self.offset = V2(0, 0)
 
         self.left_panel = VPanel(
             {
@@ -99,17 +98,17 @@ class GameScene(Scene):
         self.left_panel.build(
             self.font,
             pygame.Rect(
-                0, 0, screen_config.game_area_x - 1, screen_config.window_height
+                0, 0, screen_config.game_area.x - 1, screen_config.window_size.y
             ),
         )
         self.right_panel = VPanel({})
         self.right_panel.build(
             self.font,
             pygame.Rect(
-                screen_config.game_area_x + screen_config.game_area_width,
+                screen_config.game_area.x + screen_config.game_area.w,
                 0,
-                screen_config.game_area_x - 1,
-                screen_config.window_height,
+                screen_config.game_area.x - 1,
+                screen_config.window_size.y,
             ),
         )
 
@@ -152,30 +151,30 @@ class GameScene(Scene):
             self.screen_config, player_won, self.game_engine.turn
         )
 
-    def _remove_ship_sprite(self, position: Point) -> None:
+    def _remove_ship_sprite(self, position: V2) -> None:
         screen_pos = self.point_converter.from_game_to_screen(position)
         for sprite in self.ship_group.sprites():
-            if sprite.rect.center == screen_pos.as_tuple:
+            if sprite.rect.center == screen_pos.as_tuple():
                 self.ship_group.remove(sprite)
                 logger.debug("Ship sprite removed successfully")
                 return
 
-    def _move_ship_sprite(self, from_point: Point, to_point: Point) -> None:
+    def _move_ship_sprite(self, from_point: V2, to_point: V2) -> None:
         from_pos = self.point_converter.from_game_to_screen(from_point - self.offset)
         to_pos = self.point_converter.from_game_to_screen(to_point - self.offset)
         for sprite in self.ship_group.sprites():
-            if sprite.rect.center == from_pos.as_tuple:
-                sprite.rect.center = to_pos.as_tuple
+            if sprite.rect.center == from_pos.as_tuple():
+                sprite.rect.center = to_pos.as_tuple()
                 sprite._point = to_point
                 logger.debug("Ship sprite moved successfully")
                 return
 
     def adjust_ships_for_offset(self):
         for sprite in self.ship_group.sprites():
-            new_point: Point = sprite._point - self.offset
+            new_point: V2 = sprite._point - self.offset
             new_pos = self.point_converter.from_game_to_screen(new_point)
 
-            sprite.rect.center = new_pos.as_tuple
+            sprite.rect.center = new_pos.as_tuple()
 
     def draw(self):
         self.screen.fill(BLACK)  # instead, draw by tile
@@ -209,7 +208,7 @@ class GameScene(Scene):
             self.screen, color, (x, y, width, width), width=0 if fill else 1
         )
 
-    def convert_adjust_point_for_offset(self, point: Point) -> ScreenPoint:
+    def convert_adjust_point_for_offset(self, point: V2) -> V2:
         return self.point_converter.from_game_to_screen(
             point - self.offset, center=False
         )
@@ -229,9 +228,7 @@ class GameScene(Scene):
             self.draw_cell(LIGHT_GREEN, destination.x + 1, destination.y + 1, -1)
 
     def draw_attack_range(self):
-        point_range_cells: list[Point] = (
-            self.game_state.get_selected_ship_attack_range()
-        )
+        point_range_cells: list[V2] = self.game_state.get_selected_ship_attack_range()
         range_cells = [
             self.convert_adjust_point_for_offset(p) for p in point_range_cells
         ]
@@ -239,13 +236,13 @@ class GameScene(Scene):
             self.draw_cell(LIGHT_RED, cell.x + 1, cell.y + 1, -1)
 
     def draw_grid(self):
-        tiles_width = (self.screen_config.game_area_width + 1) // self.level.tile_size
-        tiles_height = self.screen_config.game_area_height // self.level.tile_size
+        tiles_width = (self.screen_config.game_area.w + 1) // self.level.tile_size
+        tiles_height = self.screen_config.game_area.h // self.level.tile_size
         effective_width = min(tiles_width, self.level.width)
         effective_height = min(tiles_height, self.level.height)
         for x in range(effective_width):
             for y in range(effective_height):
-                point = self.point_converter.from_game_to_screen(Point(x, y), False)
+                point = self.point_converter.from_game_to_screen(V2(x, y), False)
                 self.draw_cell(GREY, point.x, point.y, fill=False)
 
     def update(self):
@@ -255,8 +252,8 @@ class GameScene(Scene):
         if self.offset.x + x < 0 or self.offset.y + y < 0:
             return
 
-        tiles_width = self.screen_config.game_area_width // self.level.tile_size
-        tiles_height = self.screen_config.game_area_height // self.level.tile_size
+        tiles_width = self.screen_config.game_area.w // self.level.tile_size
+        tiles_height = self.screen_config.game_area.h // self.level.tile_size
         max_offset_x = self.level.width - tiles_width
         max_offset_y = self.level.height - tiles_height
 
@@ -297,7 +294,7 @@ class GameScene(Scene):
                 case pygame.K_DOWN:
                     self.update_offset(0, 1)
         if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = ScreenPoint.from_screen()
+            mouse_pos = V2(*pygame.mouse.get_pos())
             mouse_pos_point = (
                 self.point_converter.from_screen_to_game(mouse_pos) + self.offset
             )

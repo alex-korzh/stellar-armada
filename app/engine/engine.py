@@ -5,7 +5,7 @@ from enum import Enum
 
 from app.engine.weapons import Laser
 from app.utils.constants import RED, BLUE
-from app.engine.point import Point
+from app.utils.math import V2
 from app.engine.player import Player
 from app.engine.ship import Ship
 
@@ -21,15 +21,15 @@ class Event(Enum):
 
 # TODO proper ship types
 def generate_random_ships(
-    topleft: Point,
-    bottomright: Point,
+    topleft: V2,
+    bottomright: V2,
     limit: int = 1,
 ) -> list[Ship]:
     ships = []
     for _ in range(limit):
         ships.append(
             Ship(
-                position=Point(
+                position=V2(
                     random.randint(topleft.x, bottomright.x),
                     random.randint(topleft.y, bottomright.y),
                 ),
@@ -46,8 +46,8 @@ class GameEngine:
         height_tiles: int,
         starting_zones: list[list[tuple[int, int]]],
     ):
-        self.min_point = Point(0, 0)
-        self.max_point = Point(width_tiles, height_tiles)
+        self.min_point = V2(0, 0)
+        self.max_point = V2(width_tiles, height_tiles)
 
         self.width = width_tiles
         self.height = height_tiles
@@ -92,12 +92,12 @@ class GameEngine:
 
     def prepare_starting_zones(
         self, starting_zones: list[list[tuple[int, int]]]
-    ) -> dict[Player, list[Point]]:
+    ) -> dict[Player, list[V2]]:
         # only works for 2 players for now
         return {
             self.players[i]: [
-                Point(starting_zones[i][0][0], starting_zones[i][0][1]),
-                Point(starting_zones[i][1][0], starting_zones[i][1][1]),
+                V2(starting_zones[i][0][0], starting_zones[i][0][1]),
+                V2(starting_zones[i][1][0], starting_zones[i][1][1]),
             ]
             for i in range(2)
         }
@@ -118,7 +118,7 @@ class GameEngine:
                 return player
         return None
 
-    def find_current_player_ship_by_pos(self, position: Point) -> Ship | None:
+    def find_current_player_ship_by_pos(self, position: V2) -> Ship | None:
         for s in self.ships[self.current_player]:
             if s.position == position:
                 logger.debug(f"Found ship at {s.position}")
@@ -126,7 +126,7 @@ class GameEngine:
         logger.debug(f"No ship found at {position}")
         return None
 
-    def find_enemy_ship_by_pos(self, position: Point) -> tuple[Ship, Player] | None:
+    def find_enemy_ship_by_pos(self, position: V2) -> tuple[Ship, Player] | None:
         for player in self.players:
             if player == self.current_player:
                 continue
@@ -137,10 +137,10 @@ class GameEngine:
         logger.debug(f"No enemy ship found at {position}")
         return None
 
-    def is_enemy_ship(self, position: Point) -> bool:
+    def is_enemy_ship(self, position: V2) -> bool:
         return self.find_enemy_ship_by_pos(position) is not None
 
-    def __bfs(self, position: Point, depth: int) -> list[Point]:
+    def __bfs(self, position: V2, depth: int) -> list[V2]:
         destinations = [position]
         queue = [position]
 
@@ -157,7 +157,7 @@ class GameEngine:
         logger.debug("BFS successful")
         return destinations
 
-    def find_all_destinations_by_ship(self, ship: Ship) -> list[Point]:
+    def find_all_destinations_by_ship(self, ship: Ship) -> list[V2]:
         if ship not in self.get_all_ships():
             return []
         all_dest = self.__bfs(ship.position, ship.active_moves)
@@ -171,12 +171,12 @@ class GameEngine:
 
         return all_dest
 
-    def find_attack_range_by_ship(self, ship: Ship) -> list[Point]:
+    def find_attack_range_by_ship(self, ship: Ship) -> list[V2]:
         if ship not in self.get_all_ships():
             return []
         return self.__bfs(ship.position, ship.selected_weapon.range)
 
-    def is_ship_move_possible(self, ship: Ship, destination: Point) -> bool:
+    def is_ship_move_possible(self, ship: Ship, destination: V2) -> bool:
         destinations = self.find_all_destinations_by_ship(ship)
         if (
             destination in destinations
@@ -185,7 +185,7 @@ class GameEngine:
             return True
         return False
 
-    def move_ship(self, ship: Ship, destination: Point) -> None:
+    def move_ship(self, ship: Ship, destination: V2) -> None:
         from_point = ship.position
         if not self.is_ship_move_possible(ship, destination):
             return
@@ -206,7 +206,7 @@ class GameEngine:
         self.callbacks[event].append(callback)
         logger.debug(f"Subscribed to {event}: {callback.__name__}")
 
-    def try_attack_ship(self, attacker: Ship, position: Point) -> None:
+    def try_attack_ship(self, attacker: Ship, position: V2) -> None:
         ship_player = self.find_enemy_ship_by_pos(position)
         if not ship_player:
             return

@@ -27,8 +27,8 @@ class GameOver(Scene):
     def draw(self):
         self.screen.fill(BLACK)
         text = f"Game Over!\n{self.winner.name} wins!\nTurns: {self.turns}\nPress Enter to exit."
-        x = self.screen_config.game_area_width // 3
-        y = self.screen_config.window_height // 4
+        x = self.screen_config.game_area.w // 3
+        y = self.screen_config.window_size.y // 4
         shift = 0
         for line in text.split("\n"):
             r = self.font.render_to(self.screen, (x, y + shift), line, (255, 255, 255))

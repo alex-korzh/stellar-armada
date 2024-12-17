@@ -1,5 +1,7 @@
 import logging
 
+from pygame import Rect, Vector2
+
 from app.utils.constants import SCREEN_RESOLUTIONS
 
 
@@ -10,25 +12,24 @@ class ScreenConfig:
     def __init__(self, screen_width: int, screen_height: int):
         for res in reversed(SCREEN_RESOLUTIONS):
             if res[0] <= screen_width and res[1] <= screen_height:
-                self.window_width = res[0]
-                self.window_height = res[1]
+                self.window_size = Vector2(res[0], res[1])
                 break
         else:
             raise Exception("Incorrect screen resolution")
 
-        self.game_area_width: int = self.window_height
-        self.game_area_height: int = self.window_height
-        self.game_area_x: int = (self.window_width - self.window_height) // 2
-        self.game_area_y: int = 0
+
+        # FIXME doesn't work for vertical display
+        self.game_area = Rect(
+            (self.window_size.x - self.window_size.y) // 2,
+            0,
+            self.window_size.y,
+            self.window_size.y,
+        )
 
         logger.debug(f"Screen size: {screen_width}x{screen_height}")
-        logger.debug(f"Window size: {self.window_width}x{self.window_height}")
-        logger.debug(f"Game area size: {self.game_area_width}x{self.game_area_height}")
-        logger.debug(f"Game area position: ({self.game_area_x},{self.game_area_y})")
+        logger.debug(f"Window size: {self.window_size.x}x{self.window_size.y}")
+        logger.debug(f"Game area size: {self.game_area.w}x{self.game_area.h}")
+        logger.debug(f"Game area position: ({self.game_area.x},{self.game_area.y})")
 
     def is_in_game_area(self, x: int, y: int) -> bool:
-        min_x = self.game_area_x
-        min_y = self.game_area_y
-        max_x = min_x + self.game_area_width
-        max_y = min_y + self.game_area_height
-        return min_x <= x <= max_x and min_y <= y <= max_y
+        return self.game_area.collidepoint(x, y)

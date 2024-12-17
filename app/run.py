@@ -58,7 +58,7 @@ def run_game(debug: bool = True, screen_resolution: tuple[int, int] | None = Non
 
     config: ScreenConfig = ScreenConfig(*screen_resolution)
     pygame.display.set_mode(
-        (config.window_width, config.window_height),
+        config.window_size,
         flags=SCALED,
     )
     scene = MainMenu(config)

@@ -1,14 +1,14 @@
 import pytest
 from app.engine.engine import GameEngine, generate_random_ships
-from app.engine.point import Point
+from app.utils.math import V2
 from app.engine.ship import Ship
 
 
 def test_generate_random_ships():
     ships_num = 5
-    topleft = Point(0, 0)
-    bottomright = Point(7, 7)
-    bottomright_limit = Point(8, 8)
+    topleft = V2(0, 0)
+    bottomright = V2(7, 7)
+    bottomright_limit = V2(8, 8)
 
     ships = generate_random_ships(topleft, bottomright, ships_num)
 
@@ -24,8 +24,8 @@ def test_generate_random_ships_wrong_boundaries():
     """
 
     ships_num = 1
-    topleft = Point(5, 5)
-    bottomright = Point(3, 3)
+    topleft = V2(5, 5)
+    bottomright = V2(3, 3)
 
     with pytest.raises(ValueError):
         generate_random_ships(topleft, bottomright, ships_num)
@@ -42,7 +42,7 @@ def test_gameengine_create():
     engine = GameEngine(w, h, starting_zones)
 
     assert engine.turn == 1
-    assert engine.min_point == Point(*(starting_zones[0][0]))
-    assert engine.max_point == Point(w, h)  # ????
+    assert engine.min_point == V2(*(starting_zones[0][0]))
+    assert engine.max_point == V2(w, h)  # ????
     assert len(engine.players) > 1
     assert len(engine.players) == len(engine.ships.keys())

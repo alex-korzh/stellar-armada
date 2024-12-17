@@ -6,6 +6,7 @@ from app.scenes.game import GameScene
 from app.ui.menu import Menu, MenuItem
 from app.utils.config import ScreenConfig
 from app.utils.constants import BLACK
+from app.utils.math import rect_from_center
 
 
 class MainMenu(Scene):
@@ -13,10 +14,9 @@ class MainMenu(Scene):
         super().__init__()
         self.screen_config = screen_config
         self.screen = pygame.display.get_surface()
-        menu_rect = pygame.Rect(400, 400, 300, 400)
-        menu_rect.center = (
-            self.screen_config.window_width // 2,
-            self.screen_config.window_height // 2,
+        menu_rect = rect_from_center(
+            self.screen_config.window_size // 2,
+            pygame.Vector2(300, 400),
         )
         self.menu_items = [
             MenuItem(
